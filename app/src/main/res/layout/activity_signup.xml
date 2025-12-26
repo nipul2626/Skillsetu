@@ -1,0 +1,767 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootScrollSignup"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_student_gradient"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="32dp">
+
+        <!-- Decorative Circles -->
+        <View
+            android:id="@+id/decorCircle1Signup"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginStart="300dp"
+            android:layout_marginTop="200dp"
+            android:alpha="0.1"
+            android:background="@drawable/circle_shape"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/decorCircle2Signup"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_marginStart="-50dp"
+            android:layout_marginTop="500dp"
+            android:alpha="0.08"
+            android:background="@drawable/circle_shape"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Back Button -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="24dp"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#30FFFFFF"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:src="@drawable/baseline_arrow_back_24"
+                android:contentDescription="Back" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Progress Stepper -->
+        <LinearLayout
+            android:id="@+id/stepperLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="80dp"
+            android:layout_marginEnd="40dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!-- Step 1 Container -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/step1Circle"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/white">
+
+                    <TextView
+                        android:id="@+id/step1Number"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/primary_purple"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/step1Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Personal"
+                    android:textColor="@color/white"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Progress Line 1 -->
+            <View
+                android:id="@+id/progressLine1"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/progress_line_inactive" />
+
+            <!-- Step 2 Container -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/step2Circle"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#40FFFFFF">
+
+                    <TextView
+                        android:id="@+id/step2Number"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="2"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:alpha="0.7" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/step2Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Academic"
+                    android:textColor="@color/white"
+                    android:alpha="0.7"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <!-- Progress Line 2 -->
+            <View
+                android:id="@+id/progressLine2"
+                android:layout_width="0dp"
+                android:layout_height="3dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/progress_line_inactive" />
+
+            <!-- Step 3 Container -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/step3Circle"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#40FFFFFF">
+
+                    <TextView
+                        android:id="@+id/step3Number"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="3"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:alpha="0.7" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/step3Label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Verify"
+                    android:textColor="@color/white"
+                    android:alpha="0.7"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Role Segmented Control -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/segmentedControlCardSignup"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="65dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="65dp"
+            app:cardBackgroundColor="#30FFFFFF"
+            app:cardCornerRadius="25dp"
+            app:cardElevation="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/stepperLayout">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="5dp">
+
+                <View
+                    android:id="@+id/selectorBackgroundSignup"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/segmented_selected"
+                    android:elevation="2dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/btnStudentSignup"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Student"
+                        android:textColor="@color/primary_purple"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnTPOSignup"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="TPO"
+                        android:textColor="@color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </FrameLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Main Sign Up Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/signupCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="#F5FFFFFF"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/segmentedControlCardSignup">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Sign Up Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp"
+                    android:text="Create Account"
+                    android:textColor="@color/text_dark"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSignupSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="24dp"
+                    android:text="Join PlacementPro to start your journey"
+                    android:textColor="@color/text_medium"
+                    android:textSize="13sp" />
+
+                <!-- ViewFlipper for Multi-Step Form -->
+                <ViewFlipper
+                    android:id="@+id/viewFlipper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <!-- STEP 1: Personal Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Full Name -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/fullNameInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Full Name"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:endIconDrawable="@drawable/ic_person"
+                            app:endIconMode="custom"
+                            app:endIconTint="@color/primary_purple"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etFullName"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="textPersonName"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Email -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/emailInputLayoutSignup"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Email Address"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:endIconDrawable="@drawable/baseline_check_circle_24"
+                            app:endIconMode="custom"
+                            app:endIconTint="@color/success_green"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etEmailSignup"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:drawablePadding="7dp"
+                                android:drawableStart="@drawable/baseline_email_24"
+                                android:inputType="textEmailAddress"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Phone Number -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/phoneInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Phone Number"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:prefixText="+91 "
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etPhone"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:drawablePadding="7dp"
+                                android:drawableStart="@drawable/baseline_phone_24"
+                                android:inputType="phone"
+                                android:maxLength="10"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Date of Birth -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/dobInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Date of Birth"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:endIconDrawable="@drawable/baseline_calendar_month_24"
+                            app:endIconMode="custom"
+                            app:endIconTint="@color/primary_purple"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etDOB"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:focusable="false"
+                                android:clickable="true"
+                                android:inputType="none"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Next Button Step 1 -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnNextStep1"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:layout_marginTop="8dp"
+                            android:backgroundTint="@color/primary_purple"
+                            android:text="Next"
+                            android:textAllCaps="false"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="27dp"
+                            app:elevation="4dp"
+                            app:icon="@drawable/baseline_arrow_forward_24"
+                            app:iconGravity="end" />
+                    </LinearLayout>
+
+                    <!-- STEP 2: Academic Info -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- College/Institution -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/collegeInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="College/Institution Name"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etCollege"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Branch/Department -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/branchInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Branch/Department"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etBranch"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Year -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/yearInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Current Year"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <AutoCompleteTextView
+                                android:id="@+id/etYear"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- CGPA/Percentage -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/cgpaInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="CGPA/Percentage"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etCGPA"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Navigation Buttons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnBackStep2"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="54dp"
+                                android:layout_marginEnd="8dp"
+                                android:layout_weight="1"
+                                android:text="Back"
+                                android:textAllCaps="false"
+                                android:textColor="@color/primary_purple"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="27dp"
+                                app:strokeColor="@color/primary_purple"
+                                app:strokeWidth="2dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnNextStep2"
+                                android:layout_width="0dp"
+                                android:layout_height="54dp"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="@color/primary_purple"
+                                android:text="Next"
+                                android:textAllCaps="false"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="27dp"
+                                app:elevation="4dp"
+                                app:icon="@drawable/baseline_arrow_back_24"
+                                app:iconGravity="end" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- STEP 3: Password & Verification -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Create Password -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/createPasswordInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:hint="Create Password"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:endIconMode="password_toggle"
+                            app:endIconTint="@color/primary_purple"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etCreatePassword"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:drawablePadding="7dp"
+                                android:drawableStart="@drawable/baseline_password_24"
+                                android:inputType="textPassword"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Password Strength Indicator -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:orientation="vertical">
+
+                            <ProgressBar
+                                android:id="@+id/passwordStrengthBar"
+                                style="@android:style/Widget.ProgressBar.Horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="4dp"
+                                android:max="100"
+                                android:progress="0"
+                                android:progressDrawable="@drawable/password_strength_background" />
+
+                            <TextView
+                                android:id="@+id/tvPasswordStrength"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text=""
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Confirm Password -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/confirmPasswordInputLayout"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:hint="Confirm Password"
+                            app:boxBackgroundColor="@color/background_light"
+                            app:boxCornerRadiusBottomEnd="12dp"
+                            app:boxCornerRadiusBottomStart="12dp"
+                            app:boxCornerRadiusTopEnd="12dp"
+                            app:boxCornerRadiusTopStart="12dp"
+                            app:boxStrokeColor="@color/primary_purple"
+                            app:boxStrokeWidth="2dp"
+                            app:endIconMode="password_toggle"
+                            app:endIconTint="@color/primary_purple"
+                            app:hintTextColor="@color/primary_purple">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etConfirmPassword"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:drawablePadding="7dp"
+                                android:drawableStart="@drawable/baseline_password_24"
+                                android:inputType="textPassword"
+                                android:textColor="@color/text_dark"
+                                android:textSize="15sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Terms Checkbox -->
+                        <CheckBox
+                            android:id="@+id/cbTerms"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:buttonTint="@color/primary_purple"
+                            android:text="I agree to Terms &amp; Privacy Policy"
+                            android:textColor="@color/text_medium"
+                            android:textSize="13sp" />
+
+                        <!-- Navigation Buttons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnBackStep3"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                android:layout_width="0dp"
+                                android:layout_height="54dp"
+                                android:layout_marginEnd="8dp"
+                                android:layout_weight="1"
+                                android:text="Back"
+                                android:textAllCaps="false"
+                                android:textColor="@color/primary_purple"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="27dp"
+                                app:strokeColor="@color/primary_purple"
+                                app:strokeWidth="2dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnRegister"
+                                android:layout_width="0dp"
+                                android:layout_height="54dp"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:backgroundTint="@color/success_green"
+                                android:text="Register"
+                                android:textAllCaps="false"
+                                android:textColor="@color/white"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                app:cornerRadius="27dp"
+                                app:elevation="4dp"
+                                app:icon="@drawable/baseline_check_circle_24"
+                                app:iconGravity="end"
+                                app:iconTint="@color/white" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </ViewFlipper>
+
+                <!-- Already have account -->
+                <TextView
+                    android:id="@+id/tvLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="20dp"
+                    android:text="Already have an account? Log In"
+                    android:textColor="@color/text_medium"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

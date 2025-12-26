@@ -1,0 +1,50 @@
+<resources>
+
+    <!-- BASE GLASS CARD -->
+    <style name="GlassCard">
+        <item name="android:background">@drawable/bg_card_glass</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">14dp</item>
+    </style>
+
+    <!-- SMALL CARD -->
+    <style name="GlassCard.Small" parent="GlassCard">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">96dp</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <!-- FEATURE CARD -->
+    <style name="GlassCard.Feature" parent="GlassCard">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">72dp</item>
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <style name="RolePill">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">10dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:background">@drawable/bg_pill_role_unselected</item>
+    </style>
+
+    <style name="TypingDot">
+        <item name="android:layout_width">4dp</item>
+        <item name="android:layout_height">4dp</item>
+        <item name="android:layout_marginEnd">2dp</item>
+        <item name="android:background">@android:color/white</item>
+    </style>
+
+    <style name="ProgressBarMini">
+        <item name="android:layout_width">4dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_marginEnd">3dp</item>
+        <item name="android:background">#66FFFFFF</item>
+    </style>
+
+</resources>

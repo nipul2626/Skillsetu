@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Student Theme Colors -->
+    <color name="primary_purple">#667EEA</color>
+    <color name="secondary_purple">#764BA2</color>
+    <color name="success_green">#10B981</color>
+    <color name="background_light">#F3F4F6</color>
+    <color name="text_dark">#1F2937</color>
+    <color name="text_medium">#6B7280</color>
+    <color name="text_light">#9CA3AF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="divider">#E5E7EB</color>
+
+    <color name="google_red">#DB4437</color>
+    <color name="google_yellow">#F4B400</color>
+    <color name="google_blue">#4285F4</color>
+    <color name="google_green">#0F9D58</color>
+
+    <!-- TPO Theme Colors (for later) -->
+    <color name="tpo_primary">#6B46C1</color>
+    <color name="tpo_secondary">#0F2027</color>
+</resources>
