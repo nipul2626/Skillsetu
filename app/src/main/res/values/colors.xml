@@ -19,4 +19,10 @@
     <!-- TPO Theme Colors (for later) -->
     <color name="tpo_primary">#6B46C1</color>
     <color name="tpo_secondary">#0F2027</color>
+
+    <color name="warning_amber">#FFC107</color>
+
+    <color name="error_red">#F44336</color>
+
+    <color name="transparent_white">#00FFFFFF</color>
 </resources>

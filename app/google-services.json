@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1057678931900",
+    "project_id": "skillsetu-3f9d9",
+    "storage_bucket": "skillsetu-3f9d9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057678931900:android:2333a540aef9846f235db9",
+        "android_client_info": {
+          "package_name": "com.example.skilllsetujava"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS_GAT_UPzMPLBv8Uj6FXd0BUA42vOEOE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

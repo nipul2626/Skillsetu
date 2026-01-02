@@ -529,7 +529,8 @@ public class activity_login extends AppCompatActivity {
 
     private void handleFacebookLogin() {
         animateSocialButton(btnFacebook);
-        Toast.makeText(this, "Facebook login clicked", Toast.LENGTH_SHORT).show();
+        Intent signup = new Intent((activity_login.this), activity_signup.class);
+        startActivity(signup);
         // TODO: Implement Facebook Login
     }
 
