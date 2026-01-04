@@ -1,26 +1,700 @@
 package com.example.skilllsetujava;
 
-import android.annotation.SuppressLint;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ViewFlipper;
 
-import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseUser;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.regex.Pattern;
+
+/**
+ * 📝 UPDATED Signup Activity with Firebase Authentication & Firestore
+ */
 public class activity_signup extends AppCompatActivity {
 
-    @SuppressLint("MissingInflatedId")
+    // UI Components
+    private ViewFlipper viewFlipper;
+    private CardView backButton, signupCard;
+
+    // Stepper
+    private CardView step1Circle, step2Circle, step3Circle;
+    private TextView step1Number, step2Number, step3Number;
+    private TextView step1Label, step2Label, step3Label;
+    private View progressLine1, progressLine2;
+
+    // Role Selection
+    private TextView btnStudentSignup, btnTPOSignup;
+    private View selectorBackgroundSignup;
+    private boolean isStudentSelected = true;
+
+    // Step 1 - Personal Info
+    private TextInputLayout fullNameInputLayout, emailInputLayoutSignup, phoneInputLayout, dobInputLayout;
+    private TextInputEditText etFullName, etEmailSignup, etPhone, etDOB;
+    private MaterialButton btnNextStep1;
+
+    // Step 2 - Academic Info
+    private TextInputLayout collegeInputLayout, branchInputLayout, yearInputLayout, cgpaInputLayout;
+    private TextInputEditText etCollege, etBranch, etCGPA;
+    private AutoCompleteTextView etYear;
+    private MaterialButton btnBackStep2, btnNextStep2;
+
+    // Step 3 - Password & Verification
+    private TextInputLayout createPasswordInputLayout, confirmPasswordInputLayout;
+    private TextInputEditText etCreatePassword, etConfirmPassword;
+    private ProgressBar passwordStrengthBar;
+    private TextView tvPasswordStrength;
+    private CheckBox cbTerms;
+    private MaterialButton btnBackStep3, btnRegister;
+
+    private TextView tvLogin;
+
+    // Firebase
+    private FirebaseAuthHelper authHelper;
+    private FirebaseDatabaseHelper dbHelper;
+
+    // Data Storage
+    private String fullName, email, phone, dob, college, branch, year, cgpa, password;
+    private Calendar calendar = Calendar.getInstance();
+
+    private int currentStep = 0;
+    private boolean isAnimating = false;
+    private boolean isLoading = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        // Initialize Firebase
+        authHelper = new FirebaseAuthHelper(this);
+        dbHelper = new FirebaseDatabaseHelper();
+
+        // Check if already logged in
+        if (authHelper.isUserLoggedIn()) {
+            navigateToHome();
+            return;
+        }
+
+        initViews();
+        setupInitialState();
+        setupListeners();
+        setupYearDropdown();
+        animateEntrance();
+    }
+
+    private void initViews() {
+        viewFlipper = findViewById(R.id.viewFlipper);
+        backButton = findViewById(R.id.backButton);
+        signupCard = findViewById(R.id.signupCard);
+
+        step1Circle = findViewById(R.id.step1Circle);
+        step2Circle = findViewById(R.id.step2Circle);
+        step3Circle = findViewById(R.id.step3Circle);
+        step1Number = findViewById(R.id.step1Number);
+        step2Number = findViewById(R.id.step2Number);
+        step3Number = findViewById(R.id.step3Number);
+        step1Label = findViewById(R.id.step1Label);
+        step2Label = findViewById(R.id.step2Label);
+        step3Label = findViewById(R.id.step3Label);
+        progressLine1 = findViewById(R.id.progressLine1);
+        progressLine2 = findViewById(R.id.progressLine2);
+
+        btnStudentSignup = findViewById(R.id.btnStudentSignup);
+        btnTPOSignup = findViewById(R.id.btnTPOSignup);
+        selectorBackgroundSignup = findViewById(R.id.selectorBackgroundSignup);
+
+        fullNameInputLayout = findViewById(R.id.fullNameInputLayout);
+        emailInputLayoutSignup = findViewById(R.id.emailInputLayoutSignup);
+        phoneInputLayout = findViewById(R.id.phoneInputLayout);
+        dobInputLayout = findViewById(R.id.dobInputLayout);
+        etFullName = findViewById(R.id.etFullName);
+        etEmailSignup = findViewById(R.id.etEmailSignup);
+        etPhone = findViewById(R.id.etPhone);
+        etDOB = findViewById(R.id.etDOB);
+        btnNextStep1 = findViewById(R.id.btnNextStep1);
+
+        collegeInputLayout = findViewById(R.id.collegeInputLayout);
+        branchInputLayout = findViewById(R.id.branchInputLayout);
+        yearInputLayout = findViewById(R.id.yearInputLayout);
+        cgpaInputLayout = findViewById(R.id.cgpaInputLayout);
+        etCollege = findViewById(R.id.etCollege);
+        etBranch = findViewById(R.id.etBranch);
+        etYear = findViewById(R.id.etYear);
+        etCGPA = findViewById(R.id.etCGPA);
+        btnBackStep2 = findViewById(R.id.btnBackStep2);
+        btnNextStep2 = findViewById(R.id.btnNextStep2);
+
+        createPasswordInputLayout = findViewById(R.id.createPasswordInputLayout);
+        confirmPasswordInputLayout = findViewById(R.id.confirmPasswordInputLayout);
+        etCreatePassword = findViewById(R.id.etCreatePassword);
+        etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        passwordStrengthBar = findViewById(R.id.passwordStrengthBar);
+        tvPasswordStrength = findViewById(R.id.tvPasswordStrength);
+        cbTerms = findViewById(R.id.cbTerms);
+        btnBackStep3 = findViewById(R.id.btnBackStep3);
+        btnRegister = findViewById(R.id.btnRegister);
+
+        tvLogin = findViewById(R.id.tvLogin);
+    }
+
+    private void setupInitialState() {
+        selectorBackgroundSignup.post(() -> {
+            int width = btnStudentSignup.getWidth();
+            ViewGroup.LayoutParams params = selectorBackgroundSignup.getLayoutParams();
+            params.width = width;
+            selectorBackgroundSignup.setLayoutParams(params);
         });
+
+        updateStepperUI();
+    }
+
+    private void setupListeners() {
+        backButton.setOnClickListener(v -> {
+            animateClick(backButton);
+            onBackPressed();
+        });
+
+        btnStudentSignup.setOnClickListener(v -> {
+            if (!isStudentSelected && !isAnimating) {
+                selectRole(true);
+            }
+        });
+
+        btnTPOSignup.setOnClickListener(v -> {
+            if (isStudentSelected && !isAnimating) {
+                selectRole(false);
+            }
+        });
+
+        btnNextStep1.setOnClickListener(v -> validateAndProceedStep1());
+
+        etDOB.setOnClickListener(v -> showDatePicker());
+        dobInputLayout.setEndIconOnClickListener(v -> showDatePicker());
+
+        etEmailSignup.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String email = s.toString().trim();
+                if (isValidEmail(email)) {
+                    emailInputLayoutSignup.setEndIconVisible(true);
+                    emailInputLayoutSignup.setError(null);
+                } else if (email.length() > 0) {
+                    emailInputLayoutSignup.setEndIconVisible(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        btnBackStep2.setOnClickListener(v -> goToPreviousStep());
+        btnNextStep2.setOnClickListener(v -> validateAndProceedStep2());
+
+        btnBackStep3.setOnClickListener(v -> goToPreviousStep());
+        btnRegister.setOnClickListener(v -> validateAndRegister());
+
+        etCreatePassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updatePasswordStrength(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        tvLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(activity_signup.this, activity_login.class);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    private void selectRole(boolean isStudent) {
+        if (isAnimating) return;
+        isAnimating = true;
+        isStudentSelected = isStudent;
+
+        int targetX = isStudent ? 0 : btnTPOSignup.getLeft() - btnStudentSignup.getLeft();
+
+        ObjectAnimator slideAnimator = ObjectAnimator.ofFloat(
+                selectorBackgroundSignup, "translationX",
+                selectorBackgroundSignup.getTranslationX(), targetX
+        );
+        slideAnimator.setDuration(300);
+        slideAnimator.setInterpolator(new OvershootInterpolator(1.5f));
+
+        slideAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                isAnimating = false;
+            }
+        });
+
+        slideAnimator.start();
+
+        btnStudentSignup.setTextColor(ContextCompat.getColor(this,
+                isStudent ? R.color.primary_purple : R.color.white));
+        btnTPOSignup.setTextColor(ContextCompat.getColor(this,
+                isStudent ? R.color.white : R.color.tpo_primary));
+    }
+
+    private void validateAndProceedStep1() {
+        fullName = etFullName.getText().toString().trim();
+        email = etEmailSignup.getText().toString().trim();
+        phone = etPhone.getText().toString().trim();
+        dob = etDOB.getText().toString().trim();
+
+        if (fullName.isEmpty()) {
+            fullNameInputLayout.setError("Full name is required");
+            shakeView(fullNameInputLayout);
+            return;
+        }
+        fullNameInputLayout.setError(null);
+
+        if (email.isEmpty()) {
+            emailInputLayoutSignup.setError("Email is required");
+            shakeView(emailInputLayoutSignup);
+            return;
+        }
+        if (!isValidEmail(email)) {
+            emailInputLayoutSignup.setError("Invalid email format");
+            shakeView(emailInputLayoutSignup);
+            return;
+        }
+        emailInputLayoutSignup.setError(null);
+
+        if (phone.isEmpty()) {
+            phoneInputLayout.setError("Phone number is required");
+            shakeView(phoneInputLayout);
+            return;
+        }
+        if (phone.length() != 10) {
+            phoneInputLayout.setError("Phone number must be 10 digits");
+            shakeView(phoneInputLayout);
+            return;
+        }
+        phoneInputLayout.setError(null);
+
+        if (dob.isEmpty()) {
+            dobInputLayout.setError("Date of birth is required");
+            shakeView(dobInputLayout);
+            return;
+        }
+        dobInputLayout.setError(null);
+
+        goToNextStep();
+    }
+
+    private void validateAndProceedStep2() {
+        college = etCollege.getText().toString().trim();
+        branch = etBranch.getText().toString().trim();
+        year = etYear.getText().toString().trim();
+        cgpa = etCGPA.getText().toString().trim();
+
+        if (college.isEmpty()) {
+            collegeInputLayout.setError("College name is required");
+            shakeView(collegeInputLayout);
+            return;
+        }
+        collegeInputLayout.setError(null);
+
+        if (branch.isEmpty()) {
+            branchInputLayout.setError("Branch is required");
+            shakeView(branchInputLayout);
+            return;
+        }
+        branchInputLayout.setError(null);
+
+        if (year.isEmpty()) {
+            yearInputLayout.setError("Year is required");
+            shakeView(yearInputLayout);
+            return;
+        }
+        yearInputLayout.setError(null);
+
+        if (cgpa.isEmpty()) {
+            cgpaInputLayout.setError("CGPA/Percentage is required");
+            shakeView(cgpaInputLayout);
+            return;
+        }
+        cgpaInputLayout.setError(null);
+
+        goToNextStep();
+    }
+
+    /**
+     * 🔥 FIREBASE: Register User
+     */
+    private void validateAndRegister() {
+        if (isLoading) return;
+
+        password = etCreatePassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+        if (password.isEmpty()) {
+            createPasswordInputLayout.setError("Password is required");
+            shakeView(createPasswordInputLayout);
+            return;
+        }
+        if (password.length() < 8) {
+            createPasswordInputLayout.setError("Password must be at least 8 characters");
+            shakeView(createPasswordInputLayout);
+            return;
+        }
+        createPasswordInputLayout.setError(null);
+
+        if (confirmPassword.isEmpty()) {
+            confirmPasswordInputLayout.setError("Please confirm your password");
+            shakeView(confirmPasswordInputLayout);
+            return;
+        }
+        if (!password.equals(confirmPassword)) {
+            confirmPasswordInputLayout.setError("Passwords do not match");
+            shakeView(confirmPasswordInputLayout);
+            return;
+        }
+        confirmPasswordInputLayout.setError(null);
+
+        if (!cbTerms.isChecked()) {
+            Toast.makeText(this, "Please agree to Terms & Privacy Policy", Toast.LENGTH_SHORT).show();
+            shakeView(cbTerms);
+            return;
+        }
+
+        // Show loading
+        showLoading(true);
+
+        // Create Firebase account
+        authHelper.signUpWithEmail(email, password, new FirebaseAuthHelper.AuthCallback() {
+            @Override
+            public void onSuccess(FirebaseUser user) {
+                // Save user profile to Firestore
+                saveUserProfile(user.getUid());
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    showLoading(false);
+
+                    String userFriendlyError = getUserFriendlyError(error);
+
+                    new AlertDialog.Builder(activity_signup.this)
+                            .setTitle("Registration Failed")
+                            .setMessage(userFriendlyError)
+                            .setPositiveButton("OK", null)
+                            .show();
+                });
+            }
+        });
+    }
+
+    /**
+     * 💾 Save User Profile to Firestore
+     */
+    private void saveUserProfile(String userId) {
+        FirebaseDatabaseHelper.UserProfile profile = new FirebaseDatabaseHelper.UserProfile();
+        profile.fullName = fullName;
+        profile.email = email;
+        profile.phone = phone;
+        profile.dob = dob;
+        profile.role = isStudentSelected ? "student" : "tpo";
+        profile.college = college;
+        profile.branch = branch;
+        profile.year = year;
+        profile.cgpa = cgpa;
+        profile.profileImageUrl = "";
+
+        dbHelper.createUserProfile(userId, profile, new FirebaseDatabaseHelper.DatabaseCallback() {
+            @Override
+            public void onSuccess() {
+                runOnUiThread(() -> {
+                    showLoading(false);
+
+                    Toast.makeText(activity_signup.this,
+                            "✅ Registration Successful!",
+                            Toast.LENGTH_SHORT).show();
+
+                    // Navigate to home
+                    new Handler().postDelayed(() -> navigateToHome(), 500);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    showLoading(false);
+
+                    // Account created but profile save failed
+                    new AlertDialog.Builder(activity_signup.this)
+                            .setTitle("Warning")
+                            .setMessage("Account created but profile save failed. You can update it later.")
+                            .setPositiveButton("Continue", (dialog, which) -> navigateToHome())
+                            .show();
+                });
+            }
+        });
+    }
+
+    private void goToNextStep() {
+        if (currentStep < 2) {
+            currentStep++;
+            animateStepTransition(true);
+        }
+    }
+
+    private void goToPreviousStep() {
+        if (currentStep > 0) {
+            currentStep--;
+            animateStepTransition(false);
+        }
+    }
+
+    private void animateStepTransition(boolean forward) {
+        if (forward) {
+            viewFlipper.setInAnimation(this, R.anim.slide_in_right);
+            viewFlipper.setOutAnimation(this, R.anim.slide_out_left);
+            viewFlipper.showNext();
+        } else {
+            viewFlipper.setInAnimation(this, R.anim.slide_in_left);
+            viewFlipper.setOutAnimation(this, R.anim.slide_out_right);
+            viewFlipper.showPrevious();
+        }
+
+        updateStepperUI();
+    }
+
+    private void updateStepperUI() {
+        resetStepCircle(step1Circle, step1Number, step1Label);
+        resetStepCircle(step2Circle, step2Number, step2Label);
+        resetStepCircle(step3Circle, step3Number, step3Label);
+
+        progressLine1.setBackgroundResource(R.drawable.progress_line_inactive);
+        progressLine2.setBackgroundResource(R.drawable.progress_line_inactive);
+
+        if (currentStep >= 0) {
+            activateStepCircle(step1Circle, step1Number, step1Label);
+        }
+        if (currentStep >= 1) {
+            progressLine1.setBackgroundResource(R.drawable.progress_line_active);
+            activateStepCircle(step2Circle, step2Number, step2Label);
+        }
+        if (currentStep >= 2) {
+            progressLine2.setBackgroundResource(R.drawable.progress_line_active);
+            activateStepCircle(step3Circle, step3Number, step3Label);
+        }
+    }
+
+    private void resetStepCircle(CardView circle, TextView number, TextView label) {
+        circle.setCardBackgroundColor(ContextCompat.getColor(this, R.color.white_transparent_40));
+        circle.setCardElevation(2 * getResources().getDisplayMetrics().density);
+        number.setTextColor(ContextCompat.getColor(this, R.color.white));
+        number.setAlpha(0.7f);
+        label.setAlpha(0.7f);
+    }
+
+    private void activateStepCircle(CardView circle, TextView number, TextView label) {
+        circle.setCardBackgroundColor(ContextCompat.getColor(this, R.color.white));
+        circle.setCardElevation(4 * getResources().getDisplayMetrics().density);
+        number.setTextColor(ContextCompat.getColor(this, R.color.primary_purple));
+        number.setAlpha(1f);
+        label.setAlpha(1f);
+
+        circle.animate()
+                .scaleX(1.2f)
+                .scaleY(1.2f)
+                .setDuration(200)
+                .withEndAction(() ->
+                        circle.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(200)
+                                .start()
+                )
+                .start();
+    }
+
+    private void showDatePicker() {
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, year1, month, dayOfMonth) -> {
+                    calendar.set(Calendar.YEAR, year1);
+                    calendar.set(Calendar.MONTH, month);
+                    calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault());
+                    etDOB.setText(sdf.format(calendar.getTime()));
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+        );
+
+        Calendar maxDate = Calendar.getInstance();
+        maxDate.add(Calendar.YEAR, -18);
+        datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
+
+        datePickerDialog.show();
+    }
+
+    private void setupYearDropdown() {
+        String[] years = {"1st Year", "2nd Year", "3rd Year", "4th Year", "Final Year"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_dropdown_item_1line, years);
+        etYear.setAdapter(adapter);
+    }
+
+    private void updatePasswordStrength(String password) {
+        int strength = calculatePasswordStrength(password);
+        passwordStrengthBar.setProgress(strength);
+
+        if (strength == 0) {
+            tvPasswordStrength.setText("");
+        } else if (strength < 30) {
+            tvPasswordStrength.setText("Weak");
+            tvPasswordStrength.setTextColor(Color.RED);
+            passwordStrengthBar.setProgressTintList(ColorStateList.valueOf(Color.RED));
+        } else if (strength < 60) {
+            tvPasswordStrength.setText("Medium");
+            tvPasswordStrength.setTextColor(Color.parseColor("#FFA500"));
+            passwordStrengthBar.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#FFA500")));
+        } else {
+            tvPasswordStrength.setText("Strong");
+            tvPasswordStrength.setTextColor(ContextCompat.getColor(this, R.color.success_green));
+            passwordStrengthBar.setProgressTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.success_green)));
+        }
+    }
+
+    private int calculatePasswordStrength(String password) {
+        if (password.isEmpty()) return 0;
+
+        int strength = 0;
+
+        if (password.length() >= 8) strength += 25;
+        if (password.length() >= 12) strength += 15;
+        if (Pattern.compile("[a-z]").matcher(password).find()) strength += 15;
+        if (Pattern.compile("[A-Z]").matcher(password).find()) strength += 15;
+        if (Pattern.compile("[0-9]").matcher(password).find()) strength += 15;
+        if (Pattern.compile("[!@#$%^&*(),.?\":{}|<>]").matcher(password).find()) strength += 15;
+
+        return Math.min(strength, 100);
+    }
+
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    private void animateEntrance() {
+        signupCard.setAlpha(0f);
+        signupCard.setTranslationY(50f);
+
+        new Handler().postDelayed(() -> {
+            signupCard.animate()
+                    .alpha(1f)
+                    .translationY(0f)
+                    .setDuration(600)
+                    .setInterpolator(new DecelerateInterpolator())
+                    .start();
+        }, 200);
+    }
+
+    private void navigateToHome() {
+        Intent intent = new Intent(activity_signup.this, activity_homepage.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void showLoading(boolean show) {
+        isLoading = show;
+        btnRegister.setEnabled(!show);
+        btnRegister.setText(show ? "Creating Account..." : "Register");
+        btnBackStep3.setEnabled(!show);
+    }
+
+    private String getUserFriendlyError(String error) {
+        if (error.contains("email-already-in-use")) {
+            return "This email is already registered. Please login instead.";
+        } else if (error.contains("weak-password")) {
+            return "Password is too weak. Use at least 8 characters with letters and numbers.";
+        } else if (error.contains("invalid-email")) {
+            return "Invalid email format.";
+        } else {
+            return "Registration failed: " + error;
+        }
+    }
+
+    private void shakeView(View view) {
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationX",
+                0, 25, -25, 25, -25, 15, -15, 6, -6, 0);
+        animator.setDuration(500);
+        animator.start();
+    }
+
+    private void animateClick(View view) {
+        view.animate()
+                .scaleX(0.9f)
+                .scaleY(0.9f)
+                .setDuration(100)
+                .withEndAction(() ->
+                        view.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(100)
+                                .start()
+                )
+                .start();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (currentStep > 0) {
+            goToPreviousStep();
+        } else {
+            super.onBackPressed();
+        }
     }
 }

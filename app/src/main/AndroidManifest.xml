@@ -15,40 +15,44 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true">
         <activity
+            android:name=".ProfileActivity"
+            android:theme="@style/AppTheme"
+            android:exported="false" />
+        <activity
             android:name=".RoadmapActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppTheme"/>
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".EvaluationActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppTheme" />
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".InterviewActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppTheme" />
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity_homepage"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activity_signup"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppTheme"/> <!-- ✅ ONLY LAUNCHER -->
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" /> <!-- ✅ ONLY LAUNCHER -->
         <activity
             android:name=".activity_login"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:theme="@style/AppTheme">
+            android:exported="true"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

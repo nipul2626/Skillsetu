@@ -67,11 +67,18 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
+    // Firebase BoM (Bill of Materials)
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    // Firebase Authentication
     implementation("com.google.firebase:firebase-auth")
+    // Firebase Firestore
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-analytics")
+    // Firebase Storage (for profile pictures)
+    implementation ("com.google.firebase:firebase-storage")
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
 
 
 }

@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "1057678931900",
-    "project_id": "skillsetu-3f9d9",
-    "storage_bucket": "skillsetu-3f9d9.firebasestorage.app"
+    "project_number": "1060341212332",
+    "project_id": "skillsetu-db51d",
+    "storage_bucket": "skillsetu-db51d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1057678931900:android:2333a540aef9846f235db9",
+        "mobilesdk_app_id": "1:1060341212332:android:4786a4d092bb203aadab09",
         "android_client_info": {
           "package_name": "com.example.skilllsetujava"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1060341212332-1uafaq8l3smnorb002b7t5pvfq8lojck.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBS_GAT_UPzMPLBv8Uj6FXd0BUA42vOEOE"
+          "current_key": "AIzaSyD6A1-7KQMlAQfFYQzaisw9VqeFX4dwCEU"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1060341212332-1uafaq8l3smnorb002b7t5pvfq8lojck.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

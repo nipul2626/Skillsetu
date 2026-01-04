@@ -71,30 +71,70 @@ public class activity_homepage extends AppCompatActivity {
     // Animation state
     private boolean isAnimating = false;
 
+    private FirebaseAuthHelper authHelper;
+    private FirebaseDatabaseHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
 
+        // Initialize Firebase
+        authHelper = new FirebaseAuthHelper(this);
+        dbHelper = new FirebaseDatabaseHelper();
+
+        // Check authentication
+        if (!authHelper.isUserLoggedIn()) {
+            Intent intent = new Intent(this, activity_login.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // Load user stats from Firebase
+        loadUserStats();
+
         // Initialize views
         initViews();
-
-        // Setup job roles
         setupJobRoles();
-
-        // Setup navigation drawer
         setupNavigationDrawer();
-
-        // Setup listeners
         setupListeners();
-
-        // Start entrance animations
         startEntranceAnimations();
+    }
 
-        // Animate circular progress
-        animateCircularProgress();
+    private void loadUserStats() {
+        String userId = authHelper.getCurrentUserId();
 
+        if (userId == null) {
+            Log.e("Homepage", "No user ID!");
+            return;
+        }
 
+        dbHelper.getUserProfile(userId, new FirebaseDatabaseHelper.UserProfileCallback() {
+            @Override
+            public void onSuccess(FirebaseDatabaseHelper.UserProfile profile) {
+                runOnUiThread(() -> {
+                    // Update placement readiness with real data
+                    placementReadiness = profile.placementReadiness;
+
+                    // Re-animate circular progress with real data
+                    animateCircularProgress();
+
+                    Log.d("Homepage", "✅ Stats loaded: " + placementReadiness + "%");
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    Log.e("Homepage", "Failed to load stats: " + error);
+                    // Use default value
+                    placementReadiness = 0;
+                    animateCircularProgress();
+                });
+            }
+        });
     }
 
     private void initViews() {
@@ -531,10 +571,9 @@ public class activity_homepage extends AppCompatActivity {
 
 
     private void openProfileScreen() {
-        Toast.makeText(this, "Opening Profile...", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to Profile Activity
-        // Intent intent = new Intent(this, ProfileActivity.class);
-        // startActivity(intent);
+        Intent intent = new Intent(activity_homepage.this, ProfileActivity.class);
+        startActivity(intent);
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void openDashboard() {

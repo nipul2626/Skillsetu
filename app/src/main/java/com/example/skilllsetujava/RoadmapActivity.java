@@ -60,24 +60,30 @@ public class RoadmapActivity extends AppCompatActivity {
     private int completedTasksCount = 0;
     private int totalTasksCount = 0;
 
+    private FirebaseAuthHelper authHelper;
+    private FirebaseDatabaseHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_roadmap);
 
-        trainingPlan = (GroqAPIService.TrainingPlan) getIntent().getSerializableExtra("training_plan");
+        // Initialize Firebase
+        authHelper = new FirebaseAuthHelper(this);
+        dbHelper = new FirebaseDatabaseHelper();
+
+        trainingPlan = (GroqAPIService.TrainingPlan)
+                getIntent().getSerializableExtra("training_plan");
         jobRole = getIntent().getStringExtra("job_role");
         interviewType = getIntent().getStringExtra("interview_type");
         overallScore = getIntent().getDoubleExtra("overall_score", 0);
 
-        prefs = getSharedPreferences("roadmap_progress", MODE_PRIVATE);
         roadmapId = jobRole + "_" + interviewType + "_" + System.currentTimeMillis();
 
         initViews();
-        loadProgress();
+        loadProgress(); // Now loads from Firebase
         displayRoadmapWithAnimations();
     }
-
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         tvRoadmapTitle = findViewById(R.id.tvRoadmapTitle);
@@ -101,29 +107,64 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     private void loadProgress() {
-        String savedProgress = prefs.getString(roadmapId, "");
-        if (!savedProgress.isEmpty()) {
-            try {
-                org.json.JSONObject json = new org.json.JSONObject(savedProgress);
-                completedTasksCount = json.getInt("completedTasks");
-                totalTasksCount = json.getInt("totalTasks");
-            } catch (Exception e) {
-                Log.e("Roadmap", "Failed to load progress", e);
-            }
+        String userId = authHelper.getCurrentUserId();
+
+        if (userId == null) {
+            Log.e("Roadmap", "No user logged in");
+            return;
         }
+
+        dbHelper.getRoadmapProgress(userId, roadmapId,
+                new FirebaseDatabaseHelper.RoadmapCallback() {
+                    @Override
+                    public void onSuccess(FirebaseDatabaseHelper.RoadmapProgress progress) {
+                        runOnUiThread(() -> {
+                            completedTasksCount = progress.completedTasks;
+                            totalTasksCount = progress.totalTasks;
+
+                            Log.d("Roadmap", "✅ Progress loaded: " +
+                                    completedTasksCount + "/" + totalTasksCount);
+
+                            updateProgressHeader();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e("Roadmap", "Failed to load progress: " + error);
+                        // Use default values (0/0)
+                    }
+                });
     }
 
     private void saveProgress() {
-        try {
-            org.json.JSONObject json = new org.json.JSONObject();
-            json.put("completedTasks", completedTasksCount);
-            json.put("totalTasks", totalTasksCount);
-            json.put("lastUpdated", System.currentTimeMillis());
+        String userId = authHelper.getCurrentUserId();
 
-            prefs.edit().putString(roadmapId, json.toString()).apply();
-        } catch (Exception e) {
-            Log.e("Roadmap", "Save failed", e);
+        if (userId == null) {
+            Log.e("Roadmap", "No user logged in");
+            return;
         }
+
+        FirebaseDatabaseHelper.RoadmapProgress progress =
+                new FirebaseDatabaseHelper.RoadmapProgress();
+        progress.completedTasks = completedTasksCount;
+        progress.totalTasks = totalTasksCount;
+
+        // Add completed task IDs if needed
+        // progress.completedTaskIds.add("task_id");
+
+        dbHelper.saveRoadmapProgress(userId, roadmapId, progress,
+                new FirebaseDatabaseHelper.DatabaseCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Roadmap", "✅ Progress saved to Firebase");
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e("Roadmap", "❌ Failed to save: " + error);
+                    }
+                });
     }
 
     /**

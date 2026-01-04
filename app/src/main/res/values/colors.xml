@@ -25,4 +25,6 @@
     <color name="error_red">#F44336</color>
 
     <color name="transparent_white">#00FFFFFF</color>
+    <color name="white_transparent_40">#40FFFFFF</color>
+    <color name="warning_orange">#FFA500</color>
 </resources>

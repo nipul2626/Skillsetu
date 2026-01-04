@@ -22,10 +22,12 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.CheckBox;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -33,7 +35,11 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.FirebaseUser;
 
+/**
+ * 🔐 UPDATED Login Activity with Firebase Authentication
+ */
 public class activity_login extends AppCompatActivity {
 
     // UI Components
@@ -46,61 +52,57 @@ public class activity_login extends AppCompatActivity {
     private ScrollView rootScroll;
     private View decorCircle1, decorCircle2, decorCircle3, selectorBackground;
     private FrameLayout inputContainer;
+    private ProgressBar loadingProgress;
+
+    // Firebase
+    private FirebaseAuthHelper authHelper;
 
     // Role selection
     private boolean isStudentSelected = true;
     private boolean isAnimating = false;
+    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Initialize views
+        // Initialize Firebase Auth
+        authHelper = new FirebaseAuthHelper(this);
+
+        // Check if user is already logged in
+        if (authHelper.isUserLoggedIn()) {
+            navigateToHome();
+            return;
+        }
+
         initViews();
-
-        // Setup initial state
         setupInitialState();
-
-        // Setup animations
         setupEntryAnimations();
-
-        // Setup listeners
         setupListeners();
-
-        // Setup email validation
         setupEmailValidation();
-
-        // Setup Sign Up text with color
         setupSignUpText();
-
     }
 
     private void initViews() {
-
         emailInputLayout = findViewById(R.id.emailInputLayout);
         passwordInputLayout = findViewById(R.id.passwordInputLayout);
         usernameInputLayout = findViewById(R.id.usernameInputLayout);
         tvLoginTitle = findViewById(R.id.tvLoginTitle);
 
-
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         etUsername = findViewById(R.id.etUsername);
 
-        // ✅ FIX: assign to CLASS variable
         rootScroll = findViewById(R.id.rootScoll);
-
         inputContainer = findViewById(R.id.inputContainer);
 
         btnLogin = findViewById(R.id.btnLogin);
         btnGoogle = findViewById(R.id.btnGoogle);
         btnFacebook = findViewById(R.id.btnFacebook);
 
-        // ✅ FIX: no local variables
         btnStudent = findViewById(R.id.btnStudent);
         btnTPO = findViewById(R.id.btnTPO);
-
         selectorBackground = findViewById(R.id.selectorBackground);
 
         tvForgotPassword = findViewById(R.id.tvForgotPassword);
@@ -118,9 +120,7 @@ public class activity_login extends AppCompatActivity {
         decorCircle3 = findViewById(R.id.decorCircle3);
     }
 
-
     private void setupInitialState() {
-        // Set initial width for selector background (Student side)
         selectorBackground.post(() -> {
             int width = btnStudent.getWidth();
             ViewGroup.LayoutParams params = selectorBackground.getLayoutParams();
@@ -130,7 +130,6 @@ public class activity_login extends AppCompatActivity {
     }
 
     private void setupEntryAnimations() {
-        // Initially hide everything with alpha
         logoCard.setAlpha(0f);
         logoCard.setScaleX(0.3f);
         logoCard.setScaleY(0.3f);
@@ -142,7 +141,6 @@ public class activity_login extends AppCompatActivity {
         biometricCard.setScaleX(0.5f);
         biometricCard.setScaleY(0.5f);
 
-        // Animate logo with bounce
         new Handler().postDelayed(() -> {
             ObjectAnimator alpha = ObjectAnimator.ofFloat(logoCard, "alpha", 0f, 1f);
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(logoCard, "scaleX", 0.3f, 1.1f, 1f);
@@ -156,7 +154,6 @@ public class activity_login extends AppCompatActivity {
             logoSet.start();
         }, 100);
 
-        // Animate login card
         new Handler().postDelayed(() -> {
             ObjectAnimator alpha = ObjectAnimator.ofFloat(loginCard, "alpha", 0f, 1f);
             ObjectAnimator translationY = ObjectAnimator.ofFloat(loginCard, "translationY", 100f, 0f);
@@ -168,7 +165,6 @@ public class activity_login extends AppCompatActivity {
             cardSet.start();
         }, 300);
 
-        // Animate biometric button
         new Handler().postDelayed(() -> {
             ObjectAnimator alpha = ObjectAnimator.ofFloat(biometricCard, "alpha", 0f, 1f);
             ObjectAnimator scaleX = ObjectAnimator.ofFloat(biometricCard, "scaleX", 0.5f, 1f);
@@ -181,7 +177,6 @@ public class activity_login extends AppCompatActivity {
             biometricSet.start();
         }, 500);
 
-        // Floating animation for decorative circles
         animateFloatingCircle(decorCircle1, -20f, 20f, 2000);
         animateFloatingCircle(decorCircle2, -30f, 30f, 1000);
         animateFloatingCircle(decorCircle3, -40f, 40f, 1500);
@@ -197,7 +192,6 @@ public class activity_login extends AppCompatActivity {
     }
 
     private void setupListeners() {
-
         btnStudent.setOnClickListener(v -> {
             if (!isStudentSelected && !isAnimating) {
                 selectRole(true);
@@ -212,22 +206,23 @@ public class activity_login extends AppCompatActivity {
 
         btnLogin.setOnClickListener(v -> handleLogin());
         btnGoogle.setOnClickListener(v -> handleGoogleLogin());
-        btnFacebook.setOnClickListener(v -> handleFacebookLogin());
+        btnFacebook.setOnClickListener(v -> {
+            Toast.makeText(this, "Facebook login coming soon!", Toast.LENGTH_SHORT).show();
+        });
 
         tvForgotPassword.setOnClickListener(v -> handleForgotPassword());
         tvSignUp.setOnClickListener(v -> handleSignUp());
 
-        biometricCard.setOnClickListener(v -> handleBiometricLogin());
+        biometricCard.setOnClickListener(v -> {
+            Toast.makeText(this, "Biometric authentication coming soon!", Toast.LENGTH_SHORT).show();
+        });
     }
 
-
     private void selectRole(boolean isStudent) {
-
         if (isAnimating) return;
         isAnimating = true;
         isStudentSelected = isStudent;
 
-        // ✅ SIMPLE background switch (NO animation)
         if (isStudent) {
             rootScroll.setBackgroundResource(R.drawable.bg_student_gradient);
         } else {
@@ -237,23 +232,17 @@ public class activity_login extends AppCompatActivity {
         int targetX = isStudent ? 0 : btnTPO.getLeft() - btnStudent.getLeft();
 
         ObjectAnimator slideAnimator = ObjectAnimator.ofFloat(
-                selectorBackground,
-                "translationX",
-                selectorBackground.getTranslationX(),
-                targetX
+                selectorBackground, "translationX",
+                selectorBackground.getTranslationX(), targetX
         );
         slideAnimator.setDuration(300);
         slideAnimator.setInterpolator(new OvershootInterpolator(1.5f));
 
         ObjectAnimator scaleX = ObjectAnimator.ofFloat(
-                isStudent ? btnStudent : btnTPO,
-                "scaleX",
-                1f, 1.1f, 1f
+                isStudent ? btnStudent : btnTPO, "scaleX", 1f, 1.1f, 1f
         );
         ObjectAnimator scaleY = ObjectAnimator.ofFloat(
-                isStudent ? btnStudent : btnTPO,
-                "scaleY",
-                1f, 1.1f, 1f
+                isStudent ? btnStudent : btnTPO, "scaleY", 1f, 1.1f, 1f
         );
 
         AnimatorSet set = new AnimatorSet();
@@ -271,13 +260,10 @@ public class activity_login extends AppCompatActivity {
         set.start();
     }
 
-
     private void switchInputFields() {
-        // Fade out current input, fade in new input with slide animation
         View currentInput = isStudentSelected ? usernameInputLayout : emailInputLayout;
         View newInput = isStudentSelected ? emailInputLayout : usernameInputLayout;
 
-        // Fade and slide out
         currentInput.animate()
                 .alpha(0f)
                 .translationX(-50f)
@@ -287,12 +273,10 @@ public class activity_login extends AppCompatActivity {
                     currentInput.setVisibility(View.GONE);
                     currentInput.setTranslationX(0f);
 
-                    // Prepare new input
                     newInput.setAlpha(0f);
                     newInput.setTranslationX(50f);
                     newInput.setVisibility(View.VISIBLE);
 
-                    // Fade and slide in
                     newInput.animate()
                             .alpha(1f)
                             .translationX(0f)
@@ -307,13 +291,10 @@ public class activity_login extends AppCompatActivity {
                 .translationY(10f)
                 .setDuration(150)
                 .withEndAction(() -> {
-
-                    // Change password hint based on role
                     passwordInputLayout.setHint(
                             isStudentSelected ? "Password" : "TPO Password"
                     );
 
-                    // Bring it back smoothly
                     passwordInputLayout.animate()
                             .alpha(1f)
                             .translationY(0f)
@@ -322,21 +303,16 @@ public class activity_login extends AppCompatActivity {
                 })
                 .start();
 
-        // Update welcome message with animation
-        // Animate Welcome Message
         tvWelcomeMessage.animate()
                 .alpha(0f)
                 .setDuration(150)
                 .withEndAction(() -> {
-
-                    // Change welcome text
                     if (isStudentSelected) {
                         tvWelcomeMessage.setText("Welcome back! Sign in to continue");
                     } else {
                         tvWelcomeMessage.setText("TPO Portal - Manage placements");
                     }
 
-                    // Fade welcome message back in
                     tvWelcomeMessage.animate()
                             .alpha(1f)
                             .setDuration(150)
@@ -344,19 +320,14 @@ public class activity_login extends AppCompatActivity {
                 })
                 .start();
 
-
-// Animate Login Title (Student Login / TPO Login)
         tvLoginTitle.animate()
                 .alpha(0f)
                 .translationY(-20f)
                 .setStartDelay(50)
                 .setDuration(150)
                 .withEndAction(() -> {
-
-                    // Change title text
                     tvLoginTitle.setText(isStudentSelected ? "Student Login" : "TPO Login");
 
-                    // Bring it back smoothly
                     tvLoginTitle.animate()
                             .alpha(1f)
                             .translationY(0f)
@@ -364,14 +335,12 @@ public class activity_login extends AppCompatActivity {
                             .start();
                 })
                 .start();
-
     }
 
     private void updateThemeColors() {
         int primaryColor = ContextCompat.getColor(this,
                 isStudentSelected ? R.color.primary_purple : R.color.tpo_primary);
 
-        // Animate button color change
         ValueAnimator colorAnimator = ValueAnimator.ofArgb(
                 btnLogin.getBackgroundTintList().getDefaultColor(),
                 primaryColor
@@ -392,7 +361,6 @@ public class activity_login extends AppCompatActivity {
         });
         colorAnimator.start();
 
-        // Pulse animation on button
         btnLogin.animate()
                 .scaleX(1.05f)
                 .scaleY(1.05f)
@@ -441,41 +409,43 @@ public class activity_login extends AppCompatActivity {
 
         spannableString.setSpan(
                 new ForegroundColorSpan(ContextCompat.getColor(this, R.color.primary_purple)),
-                startIndex,
-                endIndex,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         );
 
         spannableString.setSpan(
                 new StyleSpan(android.graphics.Typeface.BOLD),
-                startIndex,
-                endIndex,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                startIndex, endIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         );
 
         tvSignUp.setText(spannableString);
     }
 
+    /**
+     * 🔐 FIREBASE: Handle Login
+     */
     private void handleLogin() {
-        String identifier = isStudentSelected ?
+        if (isLoading) return;
+
+        String email = isStudentSelected ?
                 etEmail.getText().toString().trim() :
-                etUsername.getText().toString().trim();
+                etUsername.getText().toString().trim() + "@tpo.domain.com"; // TPO uses username
         String password = etPassword.getText().toString().trim();
 
         // Validation
         if (isStudentSelected) {
-            if (identifier.isEmpty()) {
+            if (email.isEmpty()) {
                 emailInputLayout.setError("Email is required");
                 shakeView(emailInputLayout);
                 return;
             }
-            if (!isValidEmail(identifier)) {
+            if (!isValidEmail(email)) {
                 emailInputLayout.setError("Invalid email format");
                 shakeView(emailInputLayout);
                 return;
             }
         } else {
-            if (identifier.isEmpty()) {
+            String username = etUsername.getText().toString().trim();
+            if (username.isEmpty()) {
                 usernameInputLayout.setError("Username is required");
                 shakeView(usernameInputLayout);
                 return;
@@ -493,45 +463,145 @@ public class activity_login extends AppCompatActivity {
             return;
         }
 
-        // Button press animation
-        btnLogin.animate()
-                .scaleX(0.95f)
-                .scaleY(0.95f)
-                .setDuration(100)
-                .withEndAction(() -> {
-                    btnLogin.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .setDuration(100)
-                            .start();
+        // Clear errors
+        emailInputLayout.setError(null);
+        usernameInputLayout.setError(null);
+        passwordInputLayout.setError(null);
 
-                    // Show success message
-                    String roleText = isStudentSelected ? "Student" : "TPO";
-                    Toast.makeText(this, "Logging in as " + roleText + "...", Toast.LENGTH_SHORT).show();
+        // Show loading
+        showLoading(true);
 
-                    // TODO: Implement actual login logic here
+        // Authenticate with Firebase
+        authHelper.signInWithEmail(email, password, new FirebaseAuthHelper.AuthCallback() {
+            @Override
+            public void onSuccess(FirebaseUser user) {
+                runOnUiThread(() -> {
+                    showLoading(false);
+                    Toast.makeText(activity_login.this,
+                            "✅ Welcome back!",
+                            Toast.LENGTH_SHORT).show();
+                    navigateToHome();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> {
+                    showLoading(false);
+
+                    String userFriendlyError = getUserFriendlyError(error);
+
+                    new AlertDialog.Builder(activity_login.this)
+                            .setTitle("Login Failed")
+                            .setMessage(userFriendlyError)
+                            .setPositiveButton("OK", null)
+                            .show();
+                });
+            }
+        });
+    }
+
+    /**
+     * 🔵 FIREBASE: Handle Google Sign-In
+     */
+    private void handleGoogleLogin() {
+        animateSocialButton(btnGoogle);
+        authHelper.startGoogleSignIn(this);
+    }
+
+    /**
+     * 🔄 FIREBASE: Handle Forgot Password
+     */
+    private void handleForgotPassword() {
+        String email = etEmail.getText().toString().trim();
+
+        if (!isStudentSelected) {
+            Toast.makeText(this, "Password reset not available for TPO accounts",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (email.isEmpty()) {
+            emailInputLayout.setError("Enter your email to reset password");
+            return;
+        }
+
+        if (!isValidEmail(email)) {
+            emailInputLayout.setError("Invalid email format");
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Reset Password")
+                .setMessage("Send password reset email to " + email + "?")
+                .setPositiveButton("Send", (dialog, which) -> {
+                    showLoading(true);
+
+                    authHelper.sendPasswordResetEmail(email,
+                            new FirebaseAuthHelper.ResetCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    runOnUiThread(() -> {
+                                        showLoading(false);
+                                        Toast.makeText(activity_login.this,
+                                                "✅ Password reset email sent!",
+                                                Toast.LENGTH_LONG).show();
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    runOnUiThread(() -> {
+                                        showLoading(false);
+                                        Toast.makeText(activity_login.this,
+                                                "❌ Failed to send email: " + error,
+                                                Toast.LENGTH_SHORT).show();
+                                    });
+                                }
+                            });
                 })
-                .start();
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void handleSignUp() {
+        Intent intent = new Intent(activity_login.this, activity_signup.class);
+        startActivity(intent);
+    }
+
+    private void navigateToHome() {
+        Intent intent = new Intent(activity_login.this, activity_homepage.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
+
+    private void showLoading(boolean show) {
+        isLoading = show;
+        btnLogin.setEnabled(!show);
+        btnLogin.setText(show ? "Signing in..." : "Login");
+        btnGoogle.setEnabled(!show);
+    }
+
+    private String getUserFriendlyError(String error) {
+        if (error.contains("no user record")) {
+            return "No account found with this email. Please sign up first.";
+        } else if (error.contains("wrong-password")) {
+            return "Incorrect password. Please try again.";
+        } else if (error.contains("invalid-email")) {
+            return "Invalid email format.";
+        } else if (error.contains("user-disabled")) {
+            return "This account has been disabled.";
+        } else {
+            return "Login failed: " + error;
+        }
     }
 
     private void shakeView(View view) {
-        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationX", 0, 25, -25, 25, -25, 15, -15, 6, -6, 0);
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationX",
+                0, 25, -25, 25, -25, 15, -15, 6, -6, 0);
         animator.setDuration(500);
         animator.start();
-    }
-
-    private void handleGoogleLogin() {
-        animateSocialButton(btnGoogle);
-        Intent intent = new Intent(activity_login.this, activity_homepage.class);
-        startActivity(intent);
-        // TODO: Implement Google Sign-In
-    }
-
-    private void handleFacebookLogin() {
-        animateSocialButton(btnFacebook);
-        Intent signup = new Intent((activity_login.this), activity_signup.class);
-        startActivity(signup);
-        // TODO: Implement Facebook Login
     }
 
     private void animateSocialButton(MaterialButton button) {
@@ -549,33 +619,36 @@ public class activity_login extends AppCompatActivity {
                 .start();
     }
 
-    private void handleForgotPassword() {
-        Toast.makeText(this, "Forgot password clicked", Toast.LENGTH_SHORT).show();
-        // TODO: Navigate to forgot password screen
-    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-    private void handleSignUp() {
-        Intent intent = new Intent(activity_login.this, activity_signup.class);
-        startActivity(intent);
-        // TODO: Navigate to sign up screen
-    }
+        // Handle Google Sign-In result
+        if (requestCode == FirebaseAuthHelper.getGoogleSignInRequestCode()) {
+            showLoading(true);
+            authHelper.handleGoogleSignInResult(requestCode, data,
+                    new FirebaseAuthHelper.AuthCallback() {
+                        @Override
+                        public void onSuccess(FirebaseUser user) {
+                            runOnUiThread(() -> {
+                                showLoading(false);
+                                Toast.makeText(activity_login.this,
+                                        "✅ Google sign-in successful!",
+                                        Toast.LENGTH_SHORT).show();
+                                navigateToHome();
+                            });
+                        }
 
-    private void handleBiometricLogin() {
-        // Pulse animation for biometric button
-        biometricCard.animate()
-                .scaleX(1.2f)
-                .scaleY(1.2f)
-                .setDuration(150)
-                .withEndAction(() ->
-                        biometricCard.animate()
-                                .scaleX(1f)
-                                .scaleY(1f)
-                                .setDuration(150)
-                                .start()
-                )
-                .start();
-
-        Toast.makeText(this, "Biometric authentication", Toast.LENGTH_SHORT).show();
-        // TODO: Implement biometric authentication
+                        @Override
+                        public void onError(String error) {
+                            runOnUiThread(() -> {
+                                showLoading(false);
+                                Toast.makeText(activity_login.this,
+                                        "❌ Google sign-in failed: " + error,
+                                        Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    });
+        }
     }
 }

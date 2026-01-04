@@ -95,6 +95,8 @@ public class InterviewActivity extends AppCompatActivity {
     private static final int MIN_WORDS = 10;
     private static final int TARGET_QUICK_WORDS = 50;
     private static final int MAX_QUICK_WORDS = 150;
+    private FirebaseAuthHelper authHelper;
+
 
     private enum AnswerStage {
         QUICK_ANSWER,
@@ -121,6 +123,15 @@ public class InterviewActivity extends AppCompatActivity {
         aiManager.initializeInterview(jobRole, interviewType);
 
         voiceHelper = new VoiceRecognitionHelper(this);
+        authHelper = new FirebaseAuthHelper(this);
+        // Check if user is logged in
+        if (!authHelper.isUserLoggedIn()) {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, activity_login.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         loadAllQuestions();
     }

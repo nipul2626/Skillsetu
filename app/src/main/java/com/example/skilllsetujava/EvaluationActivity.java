@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -654,53 +655,43 @@ public class EvaluationActivity extends AppCompatActivity {
      * 💾 Auto-save to history
      */
     private void autoSaveToHistory() {
-        try {
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault()).format(new Date());
-            String interviewId = "interview_" + System.currentTimeMillis();
+        // Get current user ID
+        FirebaseAuthHelper authHelper = new FirebaseAuthHelper(this);
+        String userId = authHelper.getCurrentUserId();
 
-            JSONObject interviewData = new JSONObject();
-            interviewData.put("id", interviewId);
-            interviewData.put("timestamp", timestamp);
-            interviewData.put("jobRole", jobRole);
-            interviewData.put("interviewType", interviewType);
-            interviewData.put("totalTime", totalTime);
-            interviewData.put("overallScore", evaluation.overallScore);
-            interviewData.put("isRetake", isRetake);
-            interviewData.put("aiSource", aiSource);
-
-            if (evaluation.topStrengths != null) {
-                interviewData.put("topStrengths", new JSONArray(evaluation.topStrengths));
-            }
-            if (evaluation.criticalGaps != null) {
-                interviewData.put("criticalGaps", new JSONArray(evaluation.criticalGaps));
-            }
-
-            interviewData.put("coachFeedback", evaluation.coachFeedback);
-
-            JSONArray qaArray = new JSONArray();
-            for (GroqAPIService.QAPair qa : qaHistory) {
-                JSONObject qaObj = new JSONObject();
-                qaObj.put("question", qa.question);
-                qaObj.put("answer", qa.answer);
-                qaArray.put(qaObj);
-            }
-            interviewData.put("qaHistory", qaArray);
-
-            String existingData = prefs.getString("all_interviews", "[]");
-            JSONArray allInterviews = new JSONArray(existingData);
-            allInterviews.put(interviewData);
-
-            prefs.edit()
-                    .putString("all_interviews", allInterviews.toString())
-                    .putFloat(jobRole + "_" + interviewType + "_last_score", (float) evaluation.overallScore)
-                    .putLong(jobRole + "_" + interviewType + "_last_timestamp", System.currentTimeMillis())
-                    .apply();
-
-            Log.d("Evaluation", "✅ Interview saved: " + interviewId);
-
-        } catch (Exception e) {
-            Log.e("Evaluation", "❌ Save failed", e);
+        if (userId == null) {
+            Log.e("Evaluation", "❌ No user logged in!");
+            Toast.makeText(this, "Not logged in!", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        // Prepare interview data
+        FirebaseDatabaseHelper.InterviewData interviewData =
+                new FirebaseDatabaseHelper.InterviewData();
+        interviewData.interviewType = interviewType;
+        interviewData.jobRole = jobRole;
+        interviewData.totalTime = totalTime;
+        interviewData.isRetake = isRetake;
+        interviewData.aiSource = aiSource;
+        interviewData.evaluation = evaluation;
+        interviewData.trainingPlan = trainingPlan;
+        interviewData.qaHistory = qaHistory;
+
+        // Save to Firebase
+        FirebaseDatabaseHelper dbHelper = new FirebaseDatabaseHelper();
+        dbHelper.saveInterview(userId, interviewData,
+                new FirebaseDatabaseHelper.DatabaseCallback() {
+                    @Override
+                    public void onSuccess() {
+                        Log.d("Evaluation", "✅ Interview saved to Firebase!");
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e("Evaluation", "❌ Failed to save: " + error);
+                        // Still continue - don't block user
+                    }
+                });
     }
 
     private List<GroqAPIService.QAPair> parseQaHistory(String json) {
