@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * 🎯 ENHANCED Interview Activity
+ * ðŸŽ¯ ENHANCED Interview Activity
  * Fixed keyboard issue + Better MCQ feedback
  */
 public class InterviewActivity extends AppCompatActivity {
@@ -95,8 +95,6 @@ public class InterviewActivity extends AppCompatActivity {
     private static final int MIN_WORDS = 10;
     private static final int TARGET_QUICK_WORDS = 50;
     private static final int MAX_QUICK_WORDS = 150;
-    private FirebaseAuthHelper authHelper;
-
 
     private enum AnswerStage {
         QUICK_ANSWER,
@@ -123,15 +121,6 @@ public class InterviewActivity extends AppCompatActivity {
         aiManager.initializeInterview(jobRole, interviewType);
 
         voiceHelper = new VoiceRecognitionHelper(this);
-        authHelper = new FirebaseAuthHelper(this);
-        // Check if user is logged in
-        if (!authHelper.isUserLoggedIn()) {
-            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(this, activity_login.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
 
         loadAllQuestions();
     }
@@ -181,7 +170,7 @@ public class InterviewActivity extends AppCompatActivity {
     }
 
     /**
-     * 🔧 FIX: Setup keyboard handling to prevent EditText from being covered
+     * ðŸ”§ FIX: Setup keyboard handling to prevent EditText from being covered
      */
     private void setupKeyboardHandling() {
         // Listen for focus changes on EditTexts
@@ -285,28 +274,28 @@ public class InterviewActivity extends AppCompatActivity {
         tvWordCount.setText(wordCount + " words");
 
         if (wordCount < MIN_WORDS) {
-            tvAnswerQuality.setText("⚠️ Too short (min 10 words)");
+            tvAnswerQuality.setText("âš ï¸ Too short (min 10 words)");
             tvAnswerQuality.setTextColor(getColor(R.color.error_red));
             btnSubmitAnswer.setEnabled(false);
             btnSubmitAnswer.setAlpha(0.6f);
         } else if (wordCount < TARGET_QUICK_WORDS) {
-            tvAnswerQuality.setText("📝 Add more details");
+            tvAnswerQuality.setText("ðŸ“ Add more details");
             tvAnswerQuality.setTextColor(getColor(R.color.warning_amber));
             btnSubmitAnswer.setEnabled(true);
             btnSubmitAnswer.setAlpha(1f);
         } else if (wordCount <= MAX_QUICK_WORDS) {
             boolean hasTechnicalTerms = containsTechnicalTerms(text);
             if (hasTechnicalTerms) {
-                tvAnswerQuality.setText("✅ Good answer!");
+                tvAnswerQuality.setText("âœ… Good answer!");
                 tvAnswerQuality.setTextColor(getColor(R.color.success_green));
             } else {
-                tvAnswerQuality.setText("💡 Add technical terms");
+                tvAnswerQuality.setText("ðŸ’¡ Add technical terms");
                 tvAnswerQuality.setTextColor(getColor(R.color.warning_amber));
             }
             btnSubmitAnswer.setEnabled(true);
             btnSubmitAnswer.setAlpha(1f);
         } else {
-            tvAnswerQuality.setText("⚠️ Too long (max 150 words)");
+            tvAnswerQuality.setText("âš ï¸ Too long (max 150 words)");
             tvAnswerQuality.setTextColor(getColor(R.color.error_red));
             btnSubmitAnswer.setEnabled(false);
             btnSubmitAnswer.setAlpha(0.6f);
@@ -349,7 +338,7 @@ public class InterviewActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ IMPROVED: Submit quick answer with better MCQ handling
+     * âœ¨ IMPROVED: Submit quick answer with better MCQ handling
      */
     private void submitQuickAnswer() {
 
@@ -366,7 +355,7 @@ public class InterviewActivity extends AppCompatActivity {
         if (isMcq) {
 
             if (selectedMcqOption == -1) {
-                Toast.makeText(this, "⚠️ Please select an option", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "âš ï¸ Please select an option", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -407,7 +396,7 @@ public class InterviewActivity extends AppCompatActivity {
 
         if (!isAnswerValid(quickAnswer)) {
             Toast.makeText(this,
-                    "⚠️ Answer too short or unclear. Please improve it.",
+                    "âš ï¸ Answer too short or unclear. Please improve it.",
                     Toast.LENGTH_SHORT).show();
             return;
         }
@@ -417,7 +406,7 @@ public class InterviewActivity extends AppCompatActivity {
         btnSubmitAnswer.setAlpha(0.6f);
         etQuickAnswer.setEnabled(false);
 
-        showLoading(true, "🤖 AI is analyzing your answer...");
+        showLoading(true, "ðŸ¤– AI is analyzing your answer...");
 
         aiManager.generateFollowUpQuestion(
                 currentQuestion.text,
@@ -433,7 +422,7 @@ public class InterviewActivity extends AppCompatActivity {
                             showFollowUpSection(followUp);
 
                             Log.d("Interview",
-                                    "✅ Follow-up generated for Q" + currentQuestionNumber);
+                                    "âœ… Follow-up generated for Q" + currentQuestionNumber);
                         });
                     }
 
@@ -443,7 +432,7 @@ public class InterviewActivity extends AppCompatActivity {
                             showLoading(false, "");
 
                             Log.w("Interview",
-                                    "⚠️ Follow-up generation failed: " + error);
+                                    "âš ï¸ Follow-up generation failed: " + error);
 
                             // Graceful fallback
                             currentStage = AnswerStage.COMPLETE;
@@ -457,7 +446,7 @@ public class InterviewActivity extends AppCompatActivity {
 
 
     /**
-     * ✅ Type 2: All-Correct MCQ - NO API call
+     * âœ… Type 2: All-Correct MCQ - NO API call
      * User just needs to explain why they chose it
      */
     private void showAllCorrectMcqFeedback(String selectedOption) {
@@ -485,11 +474,11 @@ public class InterviewActivity extends AppCompatActivity {
         etFollowUpAnswer.requestFocus();
         etFollowUpAnswer.setHint("Explain your reasoning...");
 
-        Log.d("Interview", "✅ All-correct MCQ - No API call needed");
+        Log.d("Interview", "âœ… All-correct MCQ - No API call needed");
     }
 
     /**
-     * ✅ Type 3: Proper MCQ - ONE API call for explanation
+     * âœ… Type 3: Proper MCQ - ONE API call for explanation
      * AI explains why correct/incorrect in a SINGLE call
      */
     private void showProperMcqFeedbackLocal(
@@ -531,6 +520,10 @@ public class InterviewActivity extends AppCompatActivity {
 
         tvFollowUpQuestion.setText(feedback.toString());
         followUpSection.setVisibility(View.VISIBLE);
+
+        // ✅ HIDE the EditText for MCQ proper
+        etFollowUpAnswer.setVisibility(View.GONE);
+
         followUpSection.setAlpha(0f);
         followUpSection.animate().alpha(1f).setDuration(400).start();
 
@@ -540,7 +533,7 @@ public class InterviewActivity extends AppCompatActivity {
 
         storeCurrentAnswer();
 
-        btnSubmitAnswer.setText("Continue to Next Question ➔");
+        btnSubmitAnswer.setText("Continue to Next Question ➡");
         btnSubmitAnswer.setEnabled(true);
         btnSubmitAnswer.setAlpha(1f);
 
@@ -554,7 +547,7 @@ public class InterviewActivity extends AppCompatActivity {
 
 
     /**
-     * ✨ NEW: Enhanced MCQ feedback with AI explanation
+     * âœ¨ NEW: Enhanced MCQ feedback with AI explanation
      */
     private void showEnhancedMcqFeedback(boolean isCorrect, String correctOption, String wrongOption) {
         // Hide MCQ options
@@ -567,13 +560,13 @@ public class InterviewActivity extends AppCompatActivity {
         String prompt;
         if (isCorrect) {
             if (allQuestions.get(currentQuestionNumber - 1).type.equals("mcq_proper")) {
-                prompt = "✅ Correct! " + correctOption + "\n\n";
+                prompt = "âœ… Correct! " + correctOption + "\n\n";
             } else {
                 prompt = "Great choice! " + correctOption + "\n\n";
             }
             prompt += "Briefly explain (2-3 sentences) why this is the correct answer and what makes it important.";
         } else {
-            prompt = "❌ Not quite right.\n\n" +
+            prompt = "âŒ Not quite right.\n\n" +
                     "You selected: " + wrongOption + "\n" +
                     "Correct answer: " + correctOption + "\n\n" +
                     "Briefly explain (2-3 sentences) why the correct answer is right and what concept this tests.";
@@ -586,7 +579,7 @@ public class InterviewActivity extends AppCompatActivity {
         followUpSection.animate().alpha(1f).setDuration(400).start();
 
         // Request AI explanation
-        showLoading(true, "🤖 AI is explaining the concept...");
+        showLoading(true, "ðŸ¤– AI is explaining the concept...");
 
         GroqAPIService.Question currentQuestion = allQuestions.get(currentQuestionNumber - 1);
 
@@ -601,9 +594,9 @@ public class InterviewActivity extends AppCompatActivity {
 
                             // Update feedback with AI explanation
                             String finalFeedback = (isCorrect ?
-                                    "✅ Correct! " + correctOption :
-                                    "❌ Not quite. Correct: " + correctOption) +
-                                    "\n\n💡 Explanation:\n" + explanation +
+                                    "âœ… Correct! " + correctOption :
+                                    "âŒ Not quite. Correct: " + correctOption) +
+                                    "\n\nðŸ’¡ Explanation:\n" + explanation +
                                     "\n\nNow, explain in your own words why this answer is correct.";
 
                             tvFollowUpQuestion.setText(finalFeedback);
@@ -624,8 +617,8 @@ public class InterviewActivity extends AppCompatActivity {
                             showLoading(false, "");
                             // Fallback without AI explanation
                             String fallbackFeedback = (isCorrect ?
-                                    "✅ Correct! " + correctOption :
-                                    "❌ Not quite. Correct: " + correctOption) +
+                                    "âœ… Correct! " + correctOption :
+                                    "âŒ Not quite. Correct: " + correctOption) +
                                     "\n\nExplain in your own words why this answer is correct.";
 
                             tvFollowUpQuestion.setText(fallbackFeedback);
@@ -659,14 +652,14 @@ public class InterviewActivity extends AppCompatActivity {
 
         etFollowUpAnswer.requestFocus();
 
-        Toast.makeText(this, "✅ Quick answer saved! Now answer the follow-up", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "âœ… Quick answer saved! Now answer the follow-up", Toast.LENGTH_SHORT).show();
     }
 
     private void submitFollowUpAnswer() {
         String followUpAnswer = etFollowUpAnswer.getText().toString().trim();
 
         if (followUpAnswer.split("\\s+").length < 10) {
-            Toast.makeText(this, "⚠️ Please provide more details", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "âš ï¸ Please provide more details", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -679,11 +672,11 @@ public class InterviewActivity extends AppCompatActivity {
 
     private void showAddDetailsOption() {
         btnAddDetails.setVisibility(View.VISIBLE);
-        btnSubmitAnswer.setText("Next Question ➔");
+        btnSubmitAnswer.setText("Next Question âž”");
         btnSubmitAnswer.setEnabled(true);
         btnSubmitAnswer.setAlpha(1f);
 
-        Toast.makeText(this, "✅ Answers saved! Add details or move on", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "âœ… Answers saved! Add details or move on", Toast.LENGTH_SHORT).show();
     }
 
     private void showDetailedAnswerSection() {
@@ -726,7 +719,7 @@ public class InterviewActivity extends AppCompatActivity {
 
         qaHistory.add(qa);
 
-        Log.d("Interview", "✅ Stored Q" + currentQuestionNumber + " with " +
+        Log.d("Interview", "âœ… Stored Q" + currentQuestionNumber + " with " +
                 qa.getTotalWordCount() + " words");
     }
 
@@ -810,7 +803,7 @@ public class InterviewActivity extends AppCompatActivity {
     }
 
     private void loadAllQuestions() {
-        showLoading(true, "🤖 AI is preparing your interview...\n(10-15 seconds)");
+        showLoading(true, "ðŸ¤– AI is preparing your interview...\n(10-15 seconds)");
 
         aiManager.generateAllQuestions(new AIServiceManager.QuestionGenerationCallback() {
             @Override
@@ -821,7 +814,7 @@ public class InterviewActivity extends AppCompatActivity {
 
                     showLoading(false, "");
                     Toast.makeText(InterviewActivity.this,
-                            "✅ Questions ready! (" + source + ")",
+                            "âœ… Questions ready! (" + source + ")",
                             Toast.LENGTH_SHORT).show();
 
                     startInterview();
@@ -834,7 +827,7 @@ public class InterviewActivity extends AppCompatActivity {
                     showLoading(false, "");
 
                     new AlertDialog.Builder(InterviewActivity.this)
-                            .setTitle("❌ Error")
+                            .setTitle("âŒ Error")
                             .setMessage("Failed to load questions: " + error)
                             .setPositiveButton("Retry", (dialog, which) -> loadAllQuestions())
                             .setNegativeButton("Exit", (dialog, which) -> finish())
@@ -858,7 +851,7 @@ public class InterviewActivity extends AppCompatActivity {
         GroqAPIService.Question question = allQuestions.get(currentQuestionNumber - 1);
 
         showAITyping(false);
-        tvAIStatus.setText("✏️ Answer the question below");
+        tvAIStatus.setText("âœï¸ Answer the question below");
 
         tvQuestion.setText(question.text);
 
@@ -893,7 +886,7 @@ public class InterviewActivity extends AppCompatActivity {
     }
 
     /**
-     * ✅ ENHANCED: Better MCQ button styling - NO GREY OUTLINE
+     * âœ… ENHANCED: Better MCQ button styling - NO GREY OUTLINE
      */
     private void setupMcqQuestion(GroqAPIService.Question question) {
         quickAnswerSection.setVisibility(View.GONE);
@@ -918,7 +911,7 @@ public class InterviewActivity extends AppCompatActivity {
         mcqContainer.setVisibility(View.VISIBLE);
         final LinearLayout containerFinal = mcqContainer;
 
-        // ✅ FIXED: Better button styling with NO grey outline
+        // âœ… FIXED: Better button styling with NO grey outline
         for (int i = 0; i < question.options.size(); i++) {
             final int optionIndex = i;
             String optionText = question.options.get(i);
@@ -929,12 +922,12 @@ public class InterviewActivity extends AppCompatActivity {
             optionBtn.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_START);
             optionBtn.setTextSize(15);
 
-            // ✅ SOLUTION: Remove all strokes and outlines
+            // âœ… SOLUTION: Remove all strokes and outlines
             optionBtn.setBackgroundTintList(
                     android.content.res.ColorStateList.valueOf(0x40FFFFFF) // Semi-transparent white
             );
-            optionBtn.setStrokeWidth(0); // ✅ NO stroke
-            optionBtn.setStrokeColor(null); // ✅ NO stroke color
+            optionBtn.setStrokeWidth(0); // âœ… NO stroke
+            optionBtn.setStrokeColor(null); // âœ… NO stroke color
             optionBtn.setCornerRadius(dpToPx(16));
             optionBtn.setPadding(dpToPx(20), dpToPx(16), dpToPx(20), dpToPx(16));
             optionBtn.setElevation(0);
@@ -957,21 +950,21 @@ public class InterviewActivity extends AppCompatActivity {
                         MaterialButton btn = (MaterialButton) child;
 
                         if (j == optionIndex) {
-                            // ✅ Selected state - vibrant cyan, NO stroke
+                            // âœ… Selected state - vibrant cyan, NO stroke
                             btn.setBackgroundTintList(
                                     android.content.res.ColorStateList.valueOf(0xFF00E5CC)
                             );
                             btn.setTextColor(getColor(R.color.white));
                             btn.setElevation(dpToPx(6));
-                            btn.setStrokeWidth(0); // ✅ Still no stroke
+                            btn.setStrokeWidth(0); // âœ… Still no stroke
                         } else {
-                            // ✅ Unselected state - semi-transparent, NO stroke
+                            // âœ… Unselected state - semi-transparent, NO stroke
                             btn.setBackgroundTintList(
                                     android.content.res.ColorStateList.valueOf(0x40FFFFFF)
                             );
                             btn.setTextColor(getColor(R.color.white));
                             btn.setElevation(0);
-                            btn.setStrokeWidth(0); // ✅ Still no stroke
+                            btn.setStrokeWidth(0); // âœ… Still no stroke
                         }
                     }
                 }
@@ -995,7 +988,7 @@ public class InterviewActivity extends AppCompatActivity {
     private void finishInterview() {
         timerHandler.removeCallbacks(timerRunnable);
 
-        showLoading(true, "🎯 AI is evaluating your interview...\n(15-20 seconds)");
+        showLoading(true, "ðŸŽ¯ AI is evaluating your interview...\n(15-20 seconds)");
 
         List<GroqAPIService.QAPair> standardQA = convertToStandardQA();
 
@@ -1024,7 +1017,7 @@ public class InterviewActivity extends AppCompatActivity {
                     showLoading(false, "");
 
                     new AlertDialog.Builder(InterviewActivity.this)
-                            .setTitle("⚠️ Evaluation Error")
+                            .setTitle("âš ï¸ Evaluation Error")
                             .setMessage("Failed: " + error)
                             .setPositiveButton("Retry", (dialog, which) -> finishInterview())
                             .setNegativeButton("Exit", (dialog, which) -> finish())
@@ -1103,7 +1096,7 @@ public class InterviewActivity extends AppCompatActivity {
 
     private void showExitConfirmation() {
         new AlertDialog.Builder(this)
-                .setTitle("❌ Exit Interview?")
+                .setTitle("âŒ Exit Interview?")
                 .setMessage("Your progress will be lost. Are you sure?")
                 .setPositiveButton("Exit", (dialog, which) -> finish())
                 .setNegativeButton("Continue", null)
@@ -1133,15 +1126,15 @@ public class InterviewActivity extends AppCompatActivity {
             public void onListeningStarted() {
                 runOnUiThread(() -> {
                     isRecording = true;
-                    btnVoiceInput.setText("⏹️ Stop");
+                    btnVoiceInput.setText("â¹ï¸ Stop");
                     btnVoiceInput.setBackgroundTintList(getColorStateList(R.color.error_red));
-                    Toast.makeText(InterviewActivity.this, "🎤 Listening...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(InterviewActivity.this, "ðŸŽ¤ Listening...", Toast.LENGTH_SHORT).show();
                 });
             }
 
             @Override
             public void onReadyForSpeech() {
-                runOnUiThread(() -> tvAIStatus.setText("🎤 Speak now..."));
+                runOnUiThread(() -> tvAIStatus.setText("ðŸŽ¤ Speak now..."));
             }
 
             @Override
@@ -1151,7 +1144,7 @@ public class InterviewActivity extends AppCompatActivity {
             public void onFinalResult(String finalText) {
                 runOnUiThread(() -> {
                     stopVoiceInput();
-                    Toast.makeText(InterviewActivity.this, "✅ Voice captured!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(InterviewActivity.this, "âœ… Voice captured!", Toast.LENGTH_SHORT).show();
                 });
             }
 
@@ -1167,7 +1160,7 @@ public class InterviewActivity extends AppCompatActivity {
             public void onError(String error) {
                 runOnUiThread(() -> {
                     stopVoiceInput();
-                    Toast.makeText(InterviewActivity.this, "❌ " + error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(InterviewActivity.this, "âŒ " + error, Toast.LENGTH_SHORT).show();
                 });
             }
 
@@ -1175,7 +1168,7 @@ public class InterviewActivity extends AppCompatActivity {
             public void onPermissionRequired() {
                 runOnUiThread(() -> {
                     new AlertDialog.Builder(InterviewActivity.this)
-                            .setTitle("🎤 Permission Required")
+                            .setTitle("ðŸŽ¤ Permission Required")
                             .setMessage("Grant microphone permission?")
                             .setPositiveButton("Grant", (dialog, which) -> voiceHelper.checkPermission())
                             .setNegativeButton("Cancel", null)
@@ -1189,10 +1182,10 @@ public class InterviewActivity extends AppCompatActivity {
         if (isRecording) {
             voiceHelper.stopListening();
             isRecording = false;
-            btnVoiceInput.setText("🎤 Voice");
+            btnVoiceInput.setText("ðŸŽ¤ Voice");
             btnVoiceInput.setBackgroundTintList(null);
             btnVoiceInput.clearAnimation();
-            tvAIStatus.setText("✏️ Continue typing or speaking...");
+            tvAIStatus.setText("âœï¸ Continue typing or speaking...");
         }
     }
 

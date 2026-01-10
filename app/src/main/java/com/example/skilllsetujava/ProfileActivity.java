@@ -14,7 +14,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -53,32 +52,17 @@ public class ProfileActivity extends AppCompatActivity {
     private int totalInterviews = 24;
     private int skillsLearned = 12;
     private int averageScore = 85;
-    private int placementReadiness;
-    private FirebaseAuthHelper authHelper;
-    private FirebaseDatabaseHelper dbHelper;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        // Initialize Firebase
-        authHelper = new FirebaseAuthHelper(this);
-        dbHelper = new FirebaseDatabaseHelper();
-
-        // Check if user is logged in
-        if (!authHelper.isUserLoggedIn()) {
-            Intent intent = new Intent(this, activity_login.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
-
         initViews();
-        loadUserData(); // This will now load from Firebase
+        loadUserData();
         setupListeners();
         animateEntrance();
+        animateStats();
     }
 
     private void initViews() {
@@ -129,64 +113,16 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserData() {
-        String userId = authHelper.getCurrentUserId();
+        // TODO: Load from SharedPreferences or Firebase
+        // For now, using sample data
 
-        if (userId == null) {
-            Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Show loading (optional)
-        // Add a ProgressBar in your layout if needed
-
-        dbHelper.getUserProfile(userId, new FirebaseDatabaseHelper.UserProfileCallback() {
-            @Override
-            public void onSuccess(FirebaseDatabaseHelper.UserProfile profile) {
-                runOnUiThread(() -> {
-                    // Personal Info
-                    name = profile.fullName;
-                    email = profile.email;
-                    phone = profile.phone;
-
-                    tvStudentName.setText(profile.fullName);
-                    tvStudentEmail.setText(profile.email);
-                    tvStudentPhone.setText(profile.phone);
-
-                    // Academic Info
-                    college = profile.college;
-                    branch = profile.branch;
-                    year = profile.year;
-                    cgpa = profile.cgpa;
-
-                    tvStudentCollege.setText(profile.college);
-                    tvStudentBranch.setText(profile.branch);
-                    tvStudentYear.setText(profile.year);
-                    tvStudentCGPA.setText("CGPA: " + profile.cgpa);
-
-                    // Stats
-                    totalInterviews = profile.totalInterviews;
-                    averageScore = (int) profile.averageScore;
-                    skillsLearned = profile.skillsLearned;
-                    placementReadiness = profile.placementReadiness;
-
-                    // Animate stats with real data
-                    animateStats();
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    Toast.makeText(ProfileActivity.this,
-                            "Failed to load profile: " + error,
-                            Toast.LENGTH_SHORT).show();
-
-                    // Use default values
-                    tvStudentName.setText("User");
-                    tvStudentEmail.setText(authHelper.getCurrentUserEmail());
-                });
-            }
-        });
+        tvStudentName.setText(name);
+        tvStudentEmail.setText(email);
+        tvStudentPhone.setText(phone);
+        tvStudentCollege.setText(college);
+        tvStudentBranch.setText(branch);
+        tvStudentYear.setText(year);
+        tvStudentCGPA.setText("CGPA: " + cgpa);
     }
 
     private void setupListeners() {
@@ -370,26 +306,15 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void handleLogout() {
-        new AlertDialog.Builder(this)
-                .setTitle("Logout")
-                .setMessage("Are you sure you want to logout?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    authHelper.signOut(new FirebaseAuthHelper.SignOutCallback() {
-                        @Override
-                        public void onSignOutComplete() {
-                            Toast.makeText(ProfileActivity.this,
-                                    "✅ Logged out successfully",
-                                    Toast.LENGTH_SHORT).show();
+        // TODO: Clear SharedPreferences/Firebase session
+        Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
 
-                            Intent intent = new Intent(ProfileActivity.this, activity_login.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
-                        }
-                    });
-                })
-                .setNegativeButton("No", null)
-                .show();
+        new Handler().postDelayed(() -> {
+            Intent intent = new Intent(ProfileActivity.this, activity_login.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }, 500);
     }
 
     private void animateClick(View view) {

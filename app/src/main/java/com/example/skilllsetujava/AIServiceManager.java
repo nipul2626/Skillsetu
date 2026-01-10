@@ -2,6 +2,10 @@ package com.example.skilllsetujava;
 
 import android.content.Context;
 import android.util.Log;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +41,9 @@ public class AIServiceManager {
     /**
      * Generate ALL 10 questions with smart fallback
      */
+    /**
+     * Generate ALL 10 questions with smart fallback
+     */
     public void generateAllQuestions(final QuestionGenerationCallback callback) {
         Log.d(TAG, "🚀 Starting question generation...");
 
@@ -47,7 +54,13 @@ public class AIServiceManager {
 
                     @Override
                     public void onSuccess(List<GroqAPIService.Question> questions) {
-                        Log.d(TAG, "✅ Groq SUCCESS! Got all 10 questions");
+                        Log.d(TAG, "✅ Groq SUCCESS! Got " + questions.size() + " questions");
+
+                        // ✅ Ensure we have exactly 10 questions
+                        if (questions.size() > 10) {
+                            questions = questions.subList(0, 10);
+                        }
+
                         callback.onQuestionsGenerated(questions, "Groq AI");
                     }
 
@@ -171,7 +184,29 @@ public class AIServiceManager {
     private void tryGeminiQuestions(final QuestionGenerationCallback callback) {
         final List<GroqAPIService.Question> geminiQuestions = new ArrayList<>();
         final int[] questionCount = {0};
+        final int[] errorCount = {0};
         final boolean[] hasFailed = {false};
+
+        // ✅ Add timeout to prevent infinite waiting
+        Handler timeoutHandler = new Handler(Looper.getMainLooper());
+        timeoutHandler.postDelayed(() -> {
+            if (!hasFailed[0] && questionCount[0] < 10) {
+                Log.w(TAG, "⚠️ Gemini timeout - only got " + questionCount[0] + " questions");
+                hasFailed[0] = true;
+
+                if (geminiQuestions.size() >= 5) {
+                    // Use what we have if we got at least 5 questions
+                    while (geminiQuestions.size() < 10) {
+                        geminiQuestions.add(createFallbackQuestion(geminiQuestions.size() + 1));
+                    }
+                    Log.d(TAG, "✅ Using partial Gemini + fallback questions");
+                    callback.onQuestionsGenerated(geminiQuestions, "Gemini AI (Partial)");
+                } else {
+                    Log.d(TAG, "🔄 Falling back to local database...");
+                    useLocalQuestions(callback);
+                }
+            }
+        }, 30000); // 30 second timeout
 
         for (int i = 1; i <= 10; i++) {
             final int qNum = i;
@@ -193,7 +228,11 @@ public class AIServiceManager {
                                 geminiQuestions.add(question);
                                 questionCount[0]++;
 
+                                Log.d(TAG, "✅ Gemini question " + questionCount[0] + "/10");
+
                                 if (questionCount[0] == 10) {
+                                    hasFailed[0] = true;
+                                    timeoutHandler.removeCallbacksAndMessages(null);
                                     Log.d(TAG, "✅ Gemini SUCCESS! Got all 10 questions");
                                     callback.onQuestionsGenerated(geminiQuestions, "Gemini AI");
                                 }
@@ -202,8 +241,12 @@ public class AIServiceManager {
 
                         @Override
                         public void onError(String error) {
-                            if (!hasFailed[0]) {
+                            errorCount[0]++;
+                            Log.w(TAG, "⚠️ Gemini question " + qNum + " failed: " + error);
+
+                            if (!hasFailed[0] && errorCount[0] >= 3) {
                                 hasFailed[0] = true;
+                                timeoutHandler.removeCallbacksAndMessages(null);
                                 Log.w(TAG, "⚠️ Gemini failed: " + error);
                                 Log.d(TAG, "🔄 Falling back to local database...");
                                 useLocalQuestions(callback);
@@ -212,31 +255,88 @@ public class AIServiceManager {
                     }
             );
 
-            try { Thread.sleep(100); } catch (InterruptedException e) {}
+            try { Thread.sleep(200); } catch (InterruptedException e) {}
+        }
+    }
+    private GroqAPIService.Question createFallbackQuestion(int questionNumber) {
+        GroqAPIService.Question question = new GroqAPIService.Question();
+        question.type = "open_ended";
+        question.text = String.format(
+                "Question %d: Describe a challenging project you've worked on related to %s. " +
+                        "What was your approach and what did you learn?",
+                questionNumber, currentJobRole
+        );
+        question.options = null;
+        question.correctIndex = -1;
+        return question;
+    }
+    private void useLocalQuestions(QuestionGenerationCallback callback) {
+        Log.d(TAG, "📚 Using local question database...");
+
+        List<GroqAPIService.Question> localQuestions = new ArrayList<>();
+
+        try {
+            for (int i = 1; i <= 10; i++) {
+                String questionText = QuestionDatabase.getQuestion(
+                        currentJobRole,
+                        currentInterviewType,
+                        i
+                );
+
+                GroqAPIService.Question question = new GroqAPIService.Question();
+                question.type = "open_ended";
+                question.text = questionText;
+                question.options = null;
+                question.correctIndex = -1;
+
+                localQuestions.add(question);
+            }
+
+            Log.d(TAG, "✅ Local database SUCCESS! Got all 10 questions");
+            callback.onQuestionsGenerated(localQuestions, "Local Database");
+
+        } catch (Exception e) {
+            Log.e(TAG, "❌ Local database failed: " + e.getMessage());
+
+            // ✅ FINAL FALLBACK: Create generic questions if even local DB fails
+            Log.w(TAG, "⚠️ Creating emergency fallback questions...");
+
+            for (int i = 1; i <= 10; i++) {
+                GroqAPIService.Question question = new GroqAPIService.Question();
+                question.type = "open_ended";
+                question.text = createEmergencyQuestion(i, currentJobRole, currentInterviewType);
+                question.options = null;
+                question.correctIndex = -1;
+                localQuestions.add(question);
+            }
+
+            Log.d(TAG, "✅ Emergency questions created!");
+            callback.onQuestionsGenerated(localQuestions, "Fallback Questions");
         }
     }
 
-    private void useLocalQuestions(QuestionGenerationCallback callback) {
-        List<GroqAPIService.Question> localQuestions = new ArrayList<>();
+    private String createEmergencyQuestion(int number, String jobRole, String interviewType) {
+        String[] genericQuestions = {
+                "Tell me about yourself and your background in %s.",
+                "What interests you most about %s development?",
+                "Describe a challenging project you've worked on. What was your role?",
+                "How do you stay updated with the latest trends in %s?",
+                "Explain a technical concept in %s to a non-technical person.",
+                "What are your strengths and weaknesses as a %s professional?",
+                "Describe a time you worked in a team. What was your contribution?",
+                "How do you approach problem-solving in %s?",
+                "What tools and technologies are you most comfortable with?",
+                "Where do you see yourself in 3-5 years in your %s career?"
+        };
 
-        for (int i = 1; i <= 10; i++) {
-            String questionText = QuestionDatabase.getQuestion(
-                    currentJobRole,
-                    currentInterviewType,
-                    i
+        if (number <= genericQuestions.length) {
+            return String.format(genericQuestions[number - 1], jobRole);
+        } else {
+            return String.format(
+                    "Question %d: Describe your experience and understanding of %s in the context of %s.",
+                    number, jobRole, interviewType
             );
-
-            GroqAPIService.Question question = new GroqAPIService.Question();
-            question.type = "open_ended";
-            question.text = questionText;
-            question.options = null;
-            question.correctIndex = -1;
-
-            localQuestions.add(question);
         }
-
-        Log.d(TAG, "✅ Local database SUCCESS! Got all 10 questions");
-        callback.onQuestionsGenerated(localQuestions, "Local Database");
     }
 
     private void tryGeminiEvaluation(

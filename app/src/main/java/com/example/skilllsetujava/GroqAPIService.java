@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 🏆 ULTRA-STRICT Groq API Service
+ * ðŸ† ULTRA-STRICT Groq API Service
  *
  * Features:
  * - MAXIMUM strictness in answer validation
@@ -47,10 +47,10 @@ public class GroqAPIService {
     }
 
     /**
-     * 🎯 Generate ALL 10 questions
+     * ðŸŽ¯ Generate ALL 10 questions
      */
     public void generateAllQuestions(String jobRole, String interviewType, BulkQuestionCallback callback) {
-        Log.d(TAG, "🚀 Generating questions...");
+        Log.d(TAG, "ðŸš€ Generating questions...");
 
         if (!isValidApiKey()) {
             callback.onError("Invalid API Key");
@@ -69,13 +69,13 @@ public class GroqAPIService {
                         List<Question> questions = parseBulkQuestions(response);
                         if (questions.size() == 10) {
                             apiCallCount++;
-                            Log.d(TAG, "✅ Questions generated! API calls: " + apiCallCount);
+                            Log.d(TAG, "âœ… Questions generated! API calls: " + apiCallCount);
                             callback.onSuccess(questions);
                             return;
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "❌ Attempt " + attempt + " failed", e);
+                    Log.e(TAG, "âŒ Attempt " + attempt + " failed", e);
                     if (attempt >= MAX_RETRIES) {
                         callback.onError("Failed after " + MAX_RETRIES + " attempts");
                         return;
@@ -87,11 +87,11 @@ public class GroqAPIService {
     }
 
     /**
-     * 🆕 Generate follow-up question
+     * ðŸ†• Generate follow-up question
      */
     public void generateFollowUp(String jobRole, String interviewType, String originalQuestion,
                                  String studentAnswer, FollowUpQuestionCallback callback) {
-        Log.d(TAG, "🔍 Generating follow-up...");
+        Log.d(TAG, "ðŸ” Generating follow-up...");
 
         if (!isValidApiKey()) {
             callback.onError("Invalid API Key");
@@ -113,18 +113,18 @@ public class GroqAPIService {
                 }
                 callback.onError("Invalid follow-up");
             } catch (Exception e) {
-                Log.e(TAG, "❌ Follow-up failed", e);
+                Log.e(TAG, "âŒ Follow-up failed", e);
                 callback.onError("Follow-up failed");
             }
         });
     }
 
     /**
-     * 🏆 ULTRA-STRICT NATIONAL LEVEL EVALUATION
+     * ðŸ† ULTRA-STRICT NATIONAL LEVEL EVALUATION
      */
     public void evaluateAndGenerateRoadmap(String jobRole, String interviewType,
                                            List<QAPair> qaHistory, CombinedEvaluationCallback callback) {
-        Log.d(TAG, "🎯 Starting ULTRA-STRICT evaluation...");
+        Log.d(TAG, "ðŸŽ¯ Starting ULTRA-STRICT evaluation...");
 
         if (!isValidApiKey()) {
             callback.onError("Invalid API Key");
@@ -145,15 +145,15 @@ public class GroqAPIService {
                                 result.evaluation.questionAnalysis != null &&
                                 !result.evaluation.questionAnalysis.isEmpty()) {
                             apiCallCount++;
-                            Log.d(TAG, "✅ ULTRA-STRICT evaluation complete! API calls: " + apiCallCount);
+                            Log.d(TAG, "âœ… ULTRA-STRICT evaluation complete! API calls: " + apiCallCount);
                             callback.onSuccess(result);
                             return;
                         } else {
-                            Log.w(TAG, "⚠️ Question analysis missing, retrying...");
+                            Log.w(TAG, "âš ï¸ Question analysis missing, retrying...");
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "❌ Evaluation attempt " + attempt + " failed", e);
+                    Log.e(TAG, "âŒ Evaluation attempt " + attempt + " failed", e);
                     if (attempt >= MAX_RETRIES) {
                         callback.onError("Evaluation failed after " + MAX_RETRIES + " attempts");
                         return;
@@ -174,19 +174,19 @@ public class GroqAPIService {
 
                         "===== STRICT REQUIREMENTS =====\n" +
                         "1. QUESTION DISTRIBUTION:\n" +
-                        "   • Questions 1-3: Foundation level (test basic understanding)\n" +
-                        "   • Questions 4-7: Intermediate (real-world scenarios, trade-offs)\n" +
-                        "   • Questions 8-10: Advanced (system design, optimization, edge cases)\n\n" +
+                        "   â€¢ Questions 1-3: Foundation level (test basic understanding)\n" +
+                        "   â€¢ Questions 4-7: Intermediate (real-world scenarios, trade-offs)\n" +
+                        "   â€¢ Questions 8-10: Advanced (system design, optimization, edge cases)\n\n" +
 
                         "2. QUESTION TYPES (randomly distributed):\n" +
-                        "   • MCQ (All Correct): Present 4 valid solutions, candidate picks one and explains why\n" +
-                        "   • MCQ (Proper): 1 correct answer, 3 wrong options - MUST include explanations for ALL\n" +
-                        "   • Open-ended: Requires detailed technical explanation\n\n" +
+                        "   â€¢ MCQ (All Correct): Present 4 valid solutions, candidate picks one and explains why\n" +
+                        "   â€¢ MCQ (Proper): 1 correct answer, 3 wrong options - MUST include explanations for ALL\n" +
+                        "   â€¢ Open-ended: Requires detailed technical explanation\n\n" +
 
                         "3. FOR MCQ PROPER QUESTIONS - CRITICAL:\n" +
-                        "   • You MUST provide 'correctExplanation': Why the correct answer is right (2-3 sentences)\n" +
-                        "   • You MUST provide 'wrongExplanations': Array explaining why EACH wrong option is incorrect (1-2 sentences each)\n" +
-                        "   • This allows instant feedback without additional AI calls\n\n" +
+                        "   â€¢ You MUST provide 'correctExplanation': Why the correct answer is right (2-3 sentences)\n" +
+                        "   â€¢ You MUST provide 'wrongExplanations': Array explaining why EACH wrong option is incorrect (1-2 sentences each)\n" +
+                        "   â€¢ This allows instant feedback without additional AI calls\n\n" +
 
                         "===== OUTPUT FORMAT =====\n" +
                         "Return ONLY a valid JSON object:\n" +
@@ -247,7 +247,7 @@ public class GroqAPIService {
     }
 
     /**
-     * 🏆 Build ULTRA-STRICT evaluation prompt
+     * ðŸ† Build ULTRA-STRICT evaluation prompt
      */
     private String buildUltraStrictEvaluationPrompt(String jobRole, String interviewType,
                                                     List<QAPair> qaHistory) {
@@ -262,7 +262,7 @@ public class GroqAPIService {
 
                         "CONTEXT:\n" +
                         "You just conducted a %s interview for a %s position.\n" +
-                        "⚠️ PRE-ANALYSIS DETECTED:\n" +
+                        "âš ï¸ PRE-ANALYSIS DETECTED:\n" +
                         "- %d answers appear to be low quality or repeated\n" +
                         "- Answer similarity detected: %s\n\n" +
 
@@ -272,26 +272,26 @@ public class GroqAPIService {
                         "===== ULTRA-STRICT SCORING RULES =====\n\n" +
 
                         "AUTOMATIC SCORE REDUCTIONS:\n" +
-                        "• Same/similar answer repeated = 0 for ALL repeated instances\n" +
-                        "• Gibberish (asdf, qwerty, random text) = 0\n" +
-                        "• Copy-pasted question = 0\n" +
-                        "• Vague answer (<30 words) = Maximum 3.0\n" +
-                        "• Generic answer (no specifics) = Maximum 5.0\n" +
-                        "• Missing key concepts = -2.0 penalty\n" +
-                        "• No examples when needed = -1.0 penalty\n\n" +
+                        "â€¢ Same/similar answer repeated = 0 for ALL repeated instances\n" +
+                        "â€¢ Gibberish (asdf, qwerty, random text) = 0\n" +
+                        "â€¢ Copy-pasted question = 0\n" +
+                        "â€¢ Vague answer (<30 words) = Maximum 3.0\n" +
+                        "â€¢ Generic answer (no specifics) = Maximum 5.0\n" +
+                        "â€¢ Missing key concepts = -2.0 penalty\n" +
+                        "â€¢ No examples when needed = -1.0 penalty\n\n" +
 
                         "SCORING SCALE (0-10 per question):\n" +
-                        "• 9-10: EXCEPTIONAL - Covers everything + edge cases + real examples + best practices\n" +
-                        "• 7-8: STRONG - Solid understanding with minor gaps\n" +
-                        "• 5-6: ADEQUATE - Basic knowledge, lacks depth or examples\n" +
-                        "• 3-4: WEAK - Significant gaps, surface-level only\n" +
-                        "• 0-2: UNACCEPTABLE - Wrong/copied/gibberish/repeated\n\n" +
+                        "â€¢ 9-10: EXCEPTIONAL - Covers everything + edge cases + real examples + best practices\n" +
+                        "â€¢ 7-8: STRONG - Solid understanding with minor gaps\n" +
+                        "â€¢ 5-6: ADEQUATE - Basic knowledge, lacks depth or examples\n" +
+                        "â€¢ 3-4: WEAK - Significant gaps, surface-level only\n" +
+                        "â€¢ 0-2: UNACCEPTABLE - Wrong/copied/gibberish/repeated\n\n" +
 
                         "OVERALL SCORE CALCULATION:\n" +
-                        "• If >3 questions scored 0-4: Overall CANNOT exceed 5.0\n" +
-                        "• If >5 questions scored 0-4: Overall CANNOT exceed 3.0\n" +
-                        "• If answer repetition detected: Reduce overall by 2.0\n" +
-                        "• If mostly generic answers: Reduce overall by 1.5\n\n" +
+                        "â€¢ If >3 questions scored 0-4: Overall CANNOT exceed 5.0\n" +
+                        "â€¢ If >5 questions scored 0-4: Overall CANNOT exceed 3.0\n" +
+                        "â€¢ If answer repetition detected: Reduce overall by 2.0\n" +
+                        "â€¢ If mostly generic answers: Reduce overall by 1.5\n\n" +
 
                         "===== INTERVIEW TRANSCRIPT =====\n",
 
@@ -313,19 +313,19 @@ public class GroqAPIService {
 
             if (isGibberish) {
                 prompt.append(String.format("A: [GIBBERISH] '%s'\n", truncateAnswer(qa.answer, 100)));
-                prompt.append("🚫 FLAG: Random text entered - AUTOMATIC 0\n");
+                prompt.append("ðŸš« FLAG: Random text entered - AUTOMATIC 0\n");
             } else if (isCopied) {
                 prompt.append(String.format("A: [COPIED QUESTION] '%s'\n", truncateAnswer(qa.answer, 150)));
-                prompt.append("🚫 FLAG: Question copied, not answered - AUTOMATIC 0\n");
+                prompt.append("ðŸš« FLAG: Question copied, not answered - AUTOMATIC 0\n");
             } else if (isRepeated) {
                 prompt.append(String.format("A: [REPEATED ANSWER] '%s'\n", truncateAnswer(qa.answer, 200)));
-                prompt.append("🚫 FLAG: Same answer as previous question - AUTOMATIC 0\n");
+                prompt.append("ðŸš« FLAG: Same answer as previous question - AUTOMATIC 0\n");
             } else if (!isValid) {
                 prompt.append(String.format("A: [INVALID] '%s'\n", truncateAnswer(qa.answer, 100)));
-                prompt.append("⚠️ FLAG: Low quality - Maximum score 3.0\n");
+                prompt.append("âš ï¸ FLAG: Low quality - Maximum score 3.0\n");
             } else if (isVague) {
                 prompt.append("A: ").append(truncateAnswer(qa.answer, 500)).append("\n");
-                prompt.append("⚠️ FLAG: Too short (<30 words) - Maximum score 3.0\n");
+                prompt.append("âš ï¸ FLAG: Too short (<30 words) - Maximum score 3.0\n");
             } else {
                 prompt.append("A: ").append(truncateAnswer(qa.answer, 500)).append("\n");
             }
@@ -429,26 +429,26 @@ public class GroqAPIService {
 
                         "===== CRITICAL INSTRUCTIONS =====\n\n" +
                         "1. BE BRUTALLY HONEST:\n" +
-                        "   • If 5+ answers were poor, overall score MUST be 2.0-4.0\n" +
-                        "   • If answers are repeated/similar, reduce score by 2.0\n" +
-                        "   • No grade inflation - this hurts the student\n\n" +
+                        "   â€¢ If 5+ answers were poor, overall score MUST be 2.0-4.0\n" +
+                        "   â€¢ If answers are repeated/similar, reduce score by 2.0\n" +
+                        "   â€¢ No grade inflation - this hurts the student\n\n" +
 
                         "2. QUESTION ANALYSIS (MANDATORY FOR ALL 10):\n" +
-                        "   • You MUST provide analysis for ALL 10 questions\n" +
-                        "   • For invalid answers: whatWasGood = 'Nothing - answer invalid'\n" +
-                        "   • For repeated answers: score = 0, flag explicitly\n" +
-                        "   • Always provide idealAnswer with 2-3 specific points\n\n" +
+                        "   â€¢ You MUST provide analysis for ALL 10 questions\n" +
+                        "   â€¢ For invalid answers: whatWasGood = 'Nothing - answer invalid'\n" +
+                        "   â€¢ For repeated answers: score = 0, flag explicitly\n" +
+                        "   â€¢ Always provide idealAnswer with 2-3 specific points\n\n" +
 
                         "3. COACH FEEDBACK (2-3 SENTENCES MAX):\n" +
-                        "   • Sentence 1: Overall impression + score justification\n" +
-                        "   • Sentence 2: Main weakness/pattern observed\n" +
-                        "   • Sentence 3: One immediate action to improve\n\n" +
+                        "   â€¢ Sentence 1: Overall impression + score justification\n" +
+                        "   â€¢ Sentence 2: Main weakness/pattern observed\n" +
+                        "   â€¢ Sentence 3: One immediate action to improve\n\n" +
 
                         "4. TRAINING PLAN (4 WEEKS MANDATORY):\n" +
-                        "   • Include all 4 weeks in weeklyPlan array\n" +
-                        "   • Each week needs topics, practiceProblems, projects, weekendTask\n" +
-                        "   • Resources must have real URLs or 'Search: keyword'\n" +
-                        "   • Milestones for all 4 weeks\n\n" +
+                        "   â€¢ Include all 4 weeks in weeklyPlan array\n" +
+                        "   â€¢ Each week needs topics, practiceProblems, projects, weekendTask\n" +
+                        "   â€¢ Resources must have real URLs or 'Search: keyword'\n" +
+                        "   â€¢ Milestones for all 4 weeks\n\n" +
 
                         "Return ONLY valid JSON. No markdown. No explanations."
         );
@@ -665,12 +665,12 @@ public class GroqAPIService {
                 return messageObj.getString("content");
 
             } else {
-                Log.e(TAG, "❌ HTTP Error " + responseCode);
+                Log.e(TAG, "âŒ HTTP Error " + responseCode);
                 return null;
             }
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Request failed", e);
+            Log.e(TAG, "âŒ Request failed", e);
             return null;
         } finally {
             if (conn != null) conn.disconnect();
@@ -707,7 +707,7 @@ public class GroqAPIService {
                     question.correctIndex = -1;
                 }
 
-                // ✅ NEW: Parse explanations for MCQ proper
+                // âœ… NEW: Parse explanations for MCQ proper
                 if (question.type.equals("mcq_proper")) {
                     if (qObj.has("correctExplanation")) {
                         question.correctExplanation = qObj.getString("correctExplanation");
@@ -725,10 +725,10 @@ public class GroqAPIService {
                 questions.add(question);
             }
 
-            Log.d(TAG, "✅ Parsed " + questions.size() + " questions with explanations");
+            Log.d(TAG, "âœ… Parsed " + questions.size() + " questions with explanations");
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Parse error", e);
+            Log.e(TAG, "âŒ Parse error", e);
         }
         return questions;
     }
@@ -767,7 +767,7 @@ public class GroqAPIService {
                 JSONArray analysisArray = evalObj.getJSONArray("questionAnalysis");
                 evaluation.questionAnalysis = new ArrayList<>();
 
-                Log.d(TAG, "✅ Found questionAnalysis with " + analysisArray.length() + " items");
+                Log.d(TAG, "âœ… Found questionAnalysis with " + analysisArray.length() + " items");
 
                 for (int i = 0; i < analysisArray.length(); i++) {
                     JSONObject qAnalysis = analysisArray.getJSONObject(i);
@@ -781,7 +781,7 @@ public class GroqAPIService {
                     evaluation.questionAnalysis.add(analysis);
                 }
             } else {
-                Log.e(TAG, "❌ questionAnalysis NOT FOUND in response!");
+                Log.e(TAG, "âŒ questionAnalysis NOT FOUND in response!");
                 return null; // Force retry
             }
 
@@ -802,11 +802,11 @@ public class GroqAPIService {
             result.evaluation = evaluation;
             result.trainingPlan = plan;
 
-            Log.d(TAG, "✅ Parsed complete result with " + evaluation.questionAnalysis.size() + " question analyses");
+            Log.d(TAG, "âœ… Parsed complete result with " + evaluation.questionAnalysis.size() + " question analyses");
             return result;
 
         } catch (Exception e) {
-            Log.e(TAG, "❌ Parse error: " + e.getMessage(), e);
+            Log.e(TAG, "âŒ Parse error: " + e.getMessage(), e);
             return null;
         }
     }
@@ -877,7 +877,7 @@ public class GroqAPIService {
             plan.milestones.add(milestone);
         }
 
-        Log.d(TAG, "✅ Parsed training plan with " + plan.weeklyPlan.size() + " weeks");
+        Log.d(TAG, "âœ… Parsed training plan with " + plan.weeklyPlan.size() + " weeks");
 
         return plan;
     }
@@ -1047,7 +1047,7 @@ public class GroqAPIService {
         public List<String> options;
         public int correctIndex;
 
-        // ✅ NEW: Pre-generated explanation (NO runtime API call needed)
+        // âœ… NEW: Pre-generated explanation (NO runtime API call needed)
         public String correctExplanation; // Why correct answer is right
         public List<String> wrongExplanations; // Why each wrong answer is wrong
     }

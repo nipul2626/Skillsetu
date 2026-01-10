@@ -25,7 +25,7 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * ✨ ENHANCED Training Roadmap
+ * âœ¨ ENHANCED Training Roadmap
  *
  * Improvements:
  * - Larger, readable text
@@ -60,30 +60,24 @@ public class RoadmapActivity extends AppCompatActivity {
     private int completedTasksCount = 0;
     private int totalTasksCount = 0;
 
-    private FirebaseAuthHelper authHelper;
-    private FirebaseDatabaseHelper dbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_roadmap);
 
-        // Initialize Firebase
-        authHelper = new FirebaseAuthHelper(this);
-        dbHelper = new FirebaseDatabaseHelper();
-
-        trainingPlan = (GroqAPIService.TrainingPlan)
-                getIntent().getSerializableExtra("training_plan");
+        trainingPlan = (GroqAPIService.TrainingPlan) getIntent().getSerializableExtra("training_plan");
         jobRole = getIntent().getStringExtra("job_role");
         interviewType = getIntent().getStringExtra("interview_type");
         overallScore = getIntent().getDoubleExtra("overall_score", 0);
 
+        prefs = getSharedPreferences("roadmap_progress", MODE_PRIVATE);
         roadmapId = jobRole + "_" + interviewType + "_" + System.currentTimeMillis();
 
         initViews();
-        loadProgress(); // Now loads from Firebase
+        loadProgress();
         displayRoadmapWithAnimations();
     }
+
     private void initViews() {
         btnBack = findViewById(R.id.btnBack);
         tvRoadmapTitle = findViewById(R.id.tvRoadmapTitle);
@@ -101,74 +95,39 @@ public class RoadmapActivity extends AppCompatActivity {
         milestonesContainer = findViewById(R.id.milestonesContainer);
 
         tvRoadmapTitle.setText("Your 30-Day Training Plan");
-        tvJobRole.setText(jobRole + " • " + interviewType);
+        tvJobRole.setText(jobRole + " â€¢ " + interviewType);
 
         btnBack.setOnClickListener(v -> finish());
     }
 
     private void loadProgress() {
-        String userId = authHelper.getCurrentUserId();
-
-        if (userId == null) {
-            Log.e("Roadmap", "No user logged in");
-            return;
+        String savedProgress = prefs.getString(roadmapId, "");
+        if (!savedProgress.isEmpty()) {
+            try {
+                org.json.JSONObject json = new org.json.JSONObject(savedProgress);
+                completedTasksCount = json.getInt("completedTasks");
+                totalTasksCount = json.getInt("totalTasks");
+            } catch (Exception e) {
+                Log.e("Roadmap", "Failed to load progress", e);
+            }
         }
-
-        dbHelper.getRoadmapProgress(userId, roadmapId,
-                new FirebaseDatabaseHelper.RoadmapCallback() {
-                    @Override
-                    public void onSuccess(FirebaseDatabaseHelper.RoadmapProgress progress) {
-                        runOnUiThread(() -> {
-                            completedTasksCount = progress.completedTasks;
-                            totalTasksCount = progress.totalTasks;
-
-                            Log.d("Roadmap", "✅ Progress loaded: " +
-                                    completedTasksCount + "/" + totalTasksCount);
-
-                            updateProgressHeader();
-                        });
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        Log.e("Roadmap", "Failed to load progress: " + error);
-                        // Use default values (0/0)
-                    }
-                });
     }
 
     private void saveProgress() {
-        String userId = authHelper.getCurrentUserId();
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("completedTasks", completedTasksCount);
+            json.put("totalTasks", totalTasksCount);
+            json.put("lastUpdated", System.currentTimeMillis());
 
-        if (userId == null) {
-            Log.e("Roadmap", "No user logged in");
-            return;
+            prefs.edit().putString(roadmapId, json.toString()).apply();
+        } catch (Exception e) {
+            Log.e("Roadmap", "Save failed", e);
         }
-
-        FirebaseDatabaseHelper.RoadmapProgress progress =
-                new FirebaseDatabaseHelper.RoadmapProgress();
-        progress.completedTasks = completedTasksCount;
-        progress.totalTasks = totalTasksCount;
-
-        // Add completed task IDs if needed
-        // progress.completedTaskIds.add("task_id");
-
-        dbHelper.saveRoadmapProgress(userId, roadmapId, progress,
-                new FirebaseDatabaseHelper.DatabaseCallback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("Roadmap", "✅ Progress saved to Firebase");
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        Log.e("Roadmap", "❌ Failed to save: " + error);
-                    }
-                });
     }
 
     /**
-     * ✨ Display roadmap with animations
+     * âœ¨ Display roadmap with animations
      */
     private void displayRoadmapWithAnimations() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -202,7 +161,7 @@ public class RoadmapActivity extends AppCompatActivity {
     private void displayFocusAreas() {
         if (trainingPlan.focusAreas == null || trainingPlan.focusAreas.isEmpty()) return;
 
-        TextView sectionTitle = createSectionTitle("🎯 Key Focus Areas");
+        TextView sectionTitle = createSectionTitle("ðŸŽ¯ Key Focus Areas");
         focusAreasContainer.addView(sectionTitle);
 
         for (int i = 0; i < trainingPlan.focusAreas.size(); i++) {
@@ -213,7 +172,7 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better focus area card with cyan theme
+     * âœ¨ ENHANCED: Better focus area card with cyan theme
      */
     private CardView createEnhancedFocusAreaCard(GroqAPIService.FocusArea area, int index) {
         CardView card = new CardView(this);
@@ -238,7 +197,7 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tvArea = new TextView(this);
         tvArea.setText(area.area);
         tvArea.setTextColor(0xFFFFFFFF);
-        tvArea.setTextSize(19); // ✨ Larger text
+        tvArea.setTextSize(19); // âœ¨ Larger text
         tvArea.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams areaParams = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
@@ -248,12 +207,12 @@ public class RoadmapActivity extends AppCompatActivity {
 
         TextView tvPriority = new TextView(this);
         tvPriority.setText(area.priority);
-        tvPriority.setTextSize(14); // ✨ Larger text
+        tvPriority.setTextSize(14); // âœ¨ Larger text
         tvPriority.setTypeface(null, android.graphics.Typeface.BOLD);
         tvPriority.setPadding(dpToPx(14), dpToPx(6), dpToPx(14), dpToPx(6));
         tvPriority.setBackgroundResource(R.drawable.badge_background);
 
-        // ✨ Cyan theme
+        // âœ¨ Cyan theme
         int priorityColor = area.priority.equalsIgnoreCase("High") ? 0xFFFF6B6B :
                 area.priority.equalsIgnoreCase("Medium") ? 0xFFFFA500 : 0xFF00E5CC;
         tvPriority.setTextColor(priorityColor);
@@ -264,10 +223,10 @@ public class RoadmapActivity extends AppCompatActivity {
         // Progress info
         TextView tvProgress = new TextView(this);
         tvProgress.setText(String.format(Locale.US,
-                "Current: %d/10  →  Target: %d/10  •  %d hours estimated",
+                "Current: %d/10  â†’  Target: %d/10  â€¢  %d hours estimated",
                 area.currentLevel, area.targetLevel, area.estimatedHours));
         tvProgress.setTextColor(0xEEFFFFFF);
-        tvProgress.setTextSize(15); // ✨ Larger text
+        tvProgress.setTextSize(15); // âœ¨ Larger text
         LinearLayout.LayoutParams pParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -299,17 +258,17 @@ public class RoadmapActivity extends AppCompatActivity {
         // Key topics
         if (area.keyTopics != null && !area.keyTopics.isEmpty()) {
             TextView tvTopicsLabel = new TextView(this);
-            tvTopicsLabel.setText("📚 Key Topics:");
-            tvTopicsLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvTopicsLabel.setTextSize(16); // ✨ Larger text
+            tvTopicsLabel.setText("ðŸ“š Key Topics:");
+            tvTopicsLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvTopicsLabel.setTextSize(16); // âœ¨ Larger text
             tvTopicsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(tvTopicsLabel);
 
             for (String topic : area.keyTopics) {
                 TextView tvTopic = new TextView(this);
-                tvTopic.setText("• " + topic);
+                tvTopic.setText("â€¢ " + topic);
                 tvTopic.setTextColor(0xFFFFFFFF);
-                tvTopic.setTextSize(15); // ✨ Larger text
+                tvTopic.setTextSize(15); // âœ¨ Larger text
                 tvTopic.setLineSpacing(3, 1f);
                 LinearLayout.LayoutParams tParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -324,9 +283,9 @@ public class RoadmapActivity extends AppCompatActivity {
         // Resources
         if (area.resources != null && !area.resources.isEmpty()) {
             TextView tvResourcesLabel = new TextView(this);
-            tvResourcesLabel.setText("🔗 Resources:");
-            tvResourcesLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvResourcesLabel.setTextSize(16); // ✨ Larger text
+            tvResourcesLabel.setText("ðŸ”— Resources:");
+            tvResourcesLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvResourcesLabel.setTextSize(16); // âœ¨ Larger text
             tvResourcesLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             LinearLayout.LayoutParams rlParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -344,7 +303,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
         card.addView(layout);
 
-        // ✨ Slide-up animation
+        // âœ¨ Slide-up animation
         card.setAlpha(0f);
         card.setTranslationY(30f);
         card.animate()
@@ -359,7 +318,7 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better resource card with cyan theme
+     * âœ¨ ENHANCED: Better resource card with cyan theme
      */
     private CardView createEnhancedResourceCard(GroqAPIService.Resource resource) {
         CardView card = new CardView(this);
@@ -388,8 +347,8 @@ public class RoadmapActivity extends AppCompatActivity {
 
         TextView tvType = new TextView(this);
         tvType.setText(getResourceIcon(resource.type) + " " + resource.type);
-        tvType.setTextSize(13); // ✨ Larger text
-        tvType.setTextColor(0xFF00E5CC); // ✨ Cyan
+        tvType.setTextSize(13); // âœ¨ Larger text
+        tvType.setTextColor(0xFF00E5CC); // âœ¨ Cyan
         tvType.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams typeParams = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
@@ -399,7 +358,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
         TextView tvDuration = new TextView(this);
         tvDuration.setText(resource.duration);
-        tvDuration.setTextSize(13); // ✨ Larger text
+        tvDuration.setTextSize(13); // âœ¨ Larger text
         tvDuration.setTextColor(0xCCFFFFFF);
         header.addView(tvDuration);
 
@@ -409,7 +368,7 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tvTitle = new TextView(this);
         tvTitle.setText(resource.title);
         tvTitle.setTextColor(0xFFFFFFFF);
-        tvTitle.setTextSize(16); // ✨ Larger text
+        tvTitle.setTextSize(16); // âœ¨ Larger text
         tvTitle.setLineSpacing(2, 1f);
         LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -421,9 +380,9 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Link
         TextView tvLink = new TextView(this);
-        tvLink.setText("🔗 " + resource.link);
-        tvLink.setTextColor(0xFF00E5CC); // ✨ Cyan
-        tvLink.setTextSize(14); // ✨ Larger text
+        tvLink.setText("ðŸ”— " + resource.link);
+        tvLink.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+        tvLink.setTextSize(14); // âœ¨ Larger text
         layout.addView(tvLink);
 
         card.addView(layout);
@@ -460,24 +419,24 @@ public class RoadmapActivity extends AppCompatActivity {
 
     private String getResourceIcon(String type) {
         switch (type.toLowerCase()) {
-            case "documentation": return "📄";
-            case "tutorial": return "🎓";
-            case "course": return "📹";
-            case "book": return "📖";
-            case "practice": return "💪";
-            default: return "📌";
+            case "documentation": return "ðŸ“„";
+            case "tutorial": return "ðŸŽ“";
+            case "course": return "ðŸ“¹";
+            case "book": return "ðŸ“–";
+            case "practice": return "ðŸ’ª";
+            default: return "ðŸ“Œ";
         }
     }
 
     private void displayWeeklyPlan() {
         if (trainingPlan.weeklyPlan == null || trainingPlan.weeklyPlan.isEmpty()) {
-            Log.e("Roadmap", "❌ weeklyPlan is null or empty!");
+            Log.e("Roadmap", "âŒ weeklyPlan is null or empty!");
             return;
         }
 
-        Log.d("Roadmap", "✅ Found " + trainingPlan.weeklyPlan.size() + " weeks in plan");
+        Log.d("Roadmap", "âœ… Found " + trainingPlan.weeklyPlan.size() + " weeks in plan");
 
-        TextView sectionTitle = createSectionTitle("📅 4-Week Structured Plan");
+        TextView sectionTitle = createSectionTitle("ðŸ“… 4-Week Structured Plan");
         weeklyPlanContainer.addView(sectionTitle);
 
         for (int i = 0; i < trainingPlan.weeklyPlan.size(); i++) {
@@ -487,7 +446,7 @@ public class RoadmapActivity extends AppCompatActivity {
             weeklyPlanContainer.addView(weekCard);
         }
 
-        // ✅ Button container
+        // âœ… Button container
         LinearLayout buttonContainer = new LinearLayout(this);
         buttonContainer.setOrientation(LinearLayout.VERTICAL);
         LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
@@ -497,7 +456,7 @@ public class RoadmapActivity extends AppCompatActivity {
         containerParams.setMargins(0, dpToPx(28), 0, dpToPx(24));
         buttonContainer.setLayoutParams(containerParams);
 
-        // ✅ Retest button
+        // âœ… Retest button
         MaterialButton btnRetest = new MaterialButton(this);
         LinearLayout.LayoutParams retestParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -505,11 +464,11 @@ public class RoadmapActivity extends AppCompatActivity {
         );
         retestParams.setMargins(0, 0, 0, dpToPx(12));
         btnRetest.setLayoutParams(retestParams);
-        btnRetest.setText("🔄 Ready to Retest? Take Interview Again");
+        btnRetest.setText("ðŸ”„ Ready to Retest? Take Interview Again");
         btnRetest.setTextSize(16);
         btnRetest.setTextColor(0xFFFFFFFF);
 
-        // ✅ NO STROKE - Use solid background
+        // âœ… NO STROKE - Use solid background
         btnRetest.setStrokeWidth(0);
         btnRetest.setStrokeColor(null);
         btnRetest.setBackgroundTintList(
@@ -531,18 +490,18 @@ public class RoadmapActivity extends AppCompatActivity {
 
         buttonContainer.addView(btnRetest);
 
-        // ✅ NEW: Home button
+        // âœ… NEW: Home button
         MaterialButton btnHome = new MaterialButton(this);
         LinearLayout.LayoutParams homeParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         btnHome.setLayoutParams(homeParams);
-        btnHome.setText("🏠 Back to Home");
+        btnHome.setText("ðŸ  Back to Home");
         btnHome.setTextSize(16);
         btnHome.setTextColor(0xFFFFFFFF);
 
-        // ✅ NO STROKE - Outlined style with semi-transparent background
+        // âœ… NO STROKE - Outlined style with semi-transparent background
         btnHome.setStrokeWidth(0);
         btnHome.setStrokeColor(null);
         btnHome.setBackgroundTintList(
@@ -565,7 +524,7 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better week card with cyan theme
+     * âœ¨ ENHANCED: Better week card with cyan theme
      */
     private CardView createEnhancedWeekCard(GroqAPIService.WeeklyPlan week, int index) {
         CardView card = new CardView(this);
@@ -587,15 +546,15 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tvWeek = new TextView(this);
         tvWeek.setText("Week " + week.week + ": " + week.theme);
         tvWeek.setTextColor(0xFFFFFFFF);
-        tvWeek.setTextSize(20); // ✨ Larger text
+        tvWeek.setTextSize(20); // âœ¨ Larger text
         tvWeek.setTypeface(null, android.graphics.Typeface.BOLD);
         layout.addView(tvWeek);
 
         // Daily schedule
         TextView tvSchedule = new TextView(this);
-        tvSchedule.setText("⏰ Study: " + week.studyTime + " • Practice: " + week.practiceTime);
-        tvSchedule.setTextColor(0xFF00E5CC); // ✨ Cyan
-        tvSchedule.setTextSize(16); // ✨ Larger text
+        tvSchedule.setText("â° Study: " + week.studyTime + " â€¢ Practice: " + week.practiceTime);
+        tvSchedule.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+        tvSchedule.setTextSize(16); // âœ¨ Larger text
         LinearLayout.LayoutParams schedParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -606,9 +565,9 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Topics with checkboxes
         TextView tvTopicsLabel = new TextView(this);
-        tvTopicsLabel.setText("📚 Topics to Cover:");
+        tvTopicsLabel.setText("ðŸ“š Topics to Cover:");
         tvTopicsLabel.setTextColor(0xFFFFFFFF);
-        tvTopicsLabel.setTextSize(17); // ✨ Larger text
+        tvTopicsLabel.setTextSize(17); // âœ¨ Larger text
         tvTopicsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
         layout.addView(tvTopicsLabel);
 
@@ -616,8 +575,8 @@ public class RoadmapActivity extends AppCompatActivity {
             CheckBox checkbox = new CheckBox(this);
             checkbox.setText(topic);
             checkbox.setTextColor(0xFFFFFFFF);
-            checkbox.setTextSize(16); // ✨ Larger text
-            // ✨ Cyan checkbox color
+            checkbox.setTextSize(16); // âœ¨ Larger text
+            // âœ¨ Cyan checkbox color
             checkbox.setButtonTintList(android.content.res.ColorStateList.valueOf(0xFF00E5CC));
 
             String taskId = "week_" + week.week + "_topic_" + topic.hashCode();
@@ -649,9 +608,9 @@ public class RoadmapActivity extends AppCompatActivity {
         // Practice problems
         if (week.practiceProblems != null && !week.practiceProblems.isEmpty()) {
             TextView tvProblemsLabel = new TextView(this);
-            tvProblemsLabel.setText("💪 Practice Problems:");
-            tvProblemsLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvProblemsLabel.setTextSize(17); // ✨ Larger text
+            tvProblemsLabel.setText("ðŸ’ª Practice Problems:");
+            tvProblemsLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvProblemsLabel.setTextSize(17); // âœ¨ Larger text
             tvProblemsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             LinearLayout.LayoutParams plParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -670,9 +629,9 @@ public class RoadmapActivity extends AppCompatActivity {
         // Projects
         if (week.projects != null && !week.projects.isEmpty()) {
             TextView tvProjectsLabel = new TextView(this);
-            tvProjectsLabel.setText("🛠️ Projects:");
-            tvProjectsLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvProjectsLabel.setTextSize(17); // ✨ Larger text
+            tvProjectsLabel.setText("ðŸ› ï¸ Projects:");
+            tvProjectsLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvProjectsLabel.setTextSize(17); // âœ¨ Larger text
             tvProjectsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             LinearLayout.LayoutParams projParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -684,9 +643,9 @@ public class RoadmapActivity extends AppCompatActivity {
 
             for (String project : week.projects) {
                 TextView tvProject = new TextView(this);
-                tvProject.setText("• " + project);
+                tvProject.setText("â€¢ " + project);
                 tvProject.setTextColor(0xFFFFFFFF);
-                tvProject.setTextSize(16); // ✨ Larger text
+                tvProject.setTextSize(16); // âœ¨ Larger text
                 tvProject.setLineSpacing(3, 1f);
                 LinearLayout.LayoutParams pParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -700,9 +659,9 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Weekend task
         TextView tvWeekendLabel = new TextView(this);
-        tvWeekendLabel.setText("🎯 Weekend Challenge:");
-        tvWeekendLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-        tvWeekendLabel.setTextSize(17); // ✨ Larger text
+        tvWeekendLabel.setText("ðŸŽ¯ Weekend Challenge:");
+        tvWeekendLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+        tvWeekendLabel.setTextSize(17); // âœ¨ Larger text
         tvWeekendLabel.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams wlParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -715,13 +674,13 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tvWeekend = new TextView(this);
         tvWeekend.setText(week.weekendTask);
         tvWeekend.setTextColor(0xFFFFFFFF);
-        tvWeekend.setTextSize(16); // ✨ Larger text
+        tvWeekend.setTextSize(16); // âœ¨ Larger text
         tvWeekend.setLineSpacing(3, 1f);
         layout.addView(tvWeekend);
 
         card.addView(layout);
 
-        // ✨ Slide-in animation
+        // âœ¨ Slide-in animation
         card.setAlpha(0f);
         card.setTranslationX(-30f);
         card.animate()
@@ -736,7 +695,7 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better problem card
+     * âœ¨ ENHANCED: Better problem card
      */
     private CardView createEnhancedProblemCard(GroqAPIService.PracticeProblem problem) {
         CardView card = new CardView(this);
@@ -757,7 +716,7 @@ public class RoadmapActivity extends AppCompatActivity {
         // Difficulty badge
         TextView tvDifficulty = new TextView(this);
         tvDifficulty.setText(problem.difficulty);
-        tvDifficulty.setTextSize(13); // ✨ Larger text
+        tvDifficulty.setTextSize(13); // âœ¨ Larger text
         tvDifficulty.setTextColor(getDifficultyColor(problem.difficulty));
         tvDifficulty.setTypeface(null, android.graphics.Typeface.BOLD);
         tvDifficulty.setPadding(dpToPx(10), dpToPx(6), dpToPx(10), dpToPx(6));
@@ -781,14 +740,14 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tvProblem = new TextView(this);
         tvProblem.setText(problem.problem);
         tvProblem.setTextColor(0xFFFFFFFF);
-        tvProblem.setTextSize(16); // ✨ Larger text
+        tvProblem.setTextSize(16); // âœ¨ Larger text
         tvProblem.setLineSpacing(2, 1f);
         content.addView(tvProblem);
 
         TextView tvFocus = new TextView(this);
         tvFocus.setText("Focus: " + problem.focusArea);
         tvFocus.setTextColor(0xCCFFFFFF);
-        tvFocus.setTextSize(14); // ✨ Larger text
+        tvFocus.setTextSize(14); // âœ¨ Larger text
         LinearLayout.LayoutParams focusParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -804,7 +763,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
     private int getDifficultyColor(String difficulty) {
         switch (difficulty.toLowerCase()) {
-            case "easy": return 0xFF00E5CC; // ✨ Cyan
+            case "easy": return 0xFF00E5CC; // âœ¨ Cyan
             case "medium": return 0xFFFFA500; // Orange
             case "hard": return 0xFFFF6B6B; // Red
             default: return 0xFFFFFFFF;
@@ -814,7 +773,7 @@ public class RoadmapActivity extends AppCompatActivity {
     private void displayMilestones() {
         if (trainingPlan.milestones == null || trainingPlan.milestones.isEmpty()) return;
 
-        TextView sectionTitle = createSectionTitle("🏆 Milestones");
+        TextView sectionTitle = createSectionTitle("ðŸ† Milestones");
         milestonesContainer.addView(sectionTitle);
 
         for (int i = 0; i < trainingPlan.milestones.size(); i++) {
@@ -825,7 +784,7 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better milestone card
+     * âœ¨ ENHANCED: Better milestone card
      */
     private CardView createEnhancedMilestoneCard(GroqAPIService.Milestone milestone, int index) {
         CardView card = new CardView(this);
@@ -846,8 +805,8 @@ public class RoadmapActivity extends AppCompatActivity {
         // Week badge
         TextView tvWeek = new TextView(this);
         tvWeek.setText("W" + milestone.week);
-        tvWeek.setTextColor(0xFF00E5CC); // ✨ Cyan
-        tvWeek.setTextSize(22); // ✨ Larger text
+        tvWeek.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+        tvWeek.setTextSize(22); // âœ¨ Larger text
         tvWeek.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams weekParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -868,15 +827,15 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tvMilestone = new TextView(this);
         tvMilestone.setText(milestone.milestone);
         tvMilestone.setTextColor(0xFFFFFFFF);
-        tvMilestone.setTextSize(17); // ✨ Larger text
+        tvMilestone.setTextSize(17); // âœ¨ Larger text
         tvMilestone.setTypeface(null, android.graphics.Typeface.BOLD);
         tvMilestone.setLineSpacing(2, 1f);
         content.addView(tvMilestone);
 
         TextView tvVerification = new TextView(this);
-        tvVerification.setText("✅ " + milestone.verification);
+        tvVerification.setText("âœ… " + milestone.verification);
         tvVerification.setTextColor(0xEEFFFFFF);
-        tvVerification.setTextSize(15); // ✨ Larger text
+        tvVerification.setTextSize(15); // âœ¨ Larger text
         tvVerification.setLineSpacing(2, 1f);
         LinearLayout.LayoutParams verifyParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -889,7 +848,7 @@ public class RoadmapActivity extends AppCompatActivity {
         layout.addView(content);
         card.addView(layout);
 
-        // ✨ Fade-in animation
+        // âœ¨ Fade-in animation
         card.setAlpha(0f);
         card.animate()
                 .alpha(1f)
@@ -904,7 +863,7 @@ public class RoadmapActivity extends AppCompatActivity {
         TextView tv = new TextView(this);
         tv.setText(title);
         tv.setTextColor(0xFFFFFFFF);
-        tv.setTextSize(22); // ✨ Larger text
+        tv.setTextSize(22); // âœ¨ Larger text
         tv.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -913,7 +872,7 @@ public class RoadmapActivity extends AppCompatActivity {
         params.setMargins(0, dpToPx(36), 0, dpToPx(20));
         tv.setLayoutParams(params);
 
-        // ✨ Fade-in animation
+        // âœ¨ Fade-in animation
         tv.setAlpha(0f);
         tv.setTranslationY(-10f);
         tv.animate()
@@ -950,11 +909,11 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     private String getReadinessLabel(int score) {
-        if (score >= 90) return "🌟 Expert Level";
-        if (score >= 80) return "🎯 Advanced";
-        if (score >= 70) return "✅ Proficient";
-        if (score >= 60) return "📚 Intermediate";
-        return "🌱 Beginner";
+        if (score >= 90) return "ðŸŒŸ Expert Level";
+        if (score >= 80) return "ðŸŽ¯ Advanced";
+        if (score >= 70) return "âœ… Proficient";
+        if (score >= 60) return "ðŸ“š Intermediate";
+        return "ðŸŒ± Beginner";
     }
 
     private int dpToPx(int dp) {

@@ -71,70 +71,30 @@ public class activity_homepage extends AppCompatActivity {
     // Animation state
     private boolean isAnimating = false;
 
-    private FirebaseAuthHelper authHelper;
-    private FirebaseDatabaseHelper dbHelper;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
 
-        // Initialize Firebase
-        authHelper = new FirebaseAuthHelper(this);
-        dbHelper = new FirebaseDatabaseHelper();
-
-        // Check authentication
-        if (!authHelper.isUserLoggedIn()) {
-            Intent intent = new Intent(this, activity_login.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-            return;
-        }
-
-        // Load user stats from Firebase
-        loadUserStats();
-
         // Initialize views
         initViews();
+
+        // Setup job roles
         setupJobRoles();
+
+        // Setup navigation drawer
         setupNavigationDrawer();
+
+        // Setup listeners
         setupListeners();
+
+        // Start entrance animations
         startEntranceAnimations();
-    }
 
-    private void loadUserStats() {
-        String userId = authHelper.getCurrentUserId();
+        // Animate circular progress
+        animateCircularProgress();
 
-        if (userId == null) {
-            Log.e("Homepage", "No user ID!");
-            return;
-        }
 
-        dbHelper.getUserProfile(userId, new FirebaseDatabaseHelper.UserProfileCallback() {
-            @Override
-            public void onSuccess(FirebaseDatabaseHelper.UserProfile profile) {
-                runOnUiThread(() -> {
-                    // Update placement readiness with real data
-                    placementReadiness = profile.placementReadiness;
-
-                    // Re-animate circular progress with real data
-                    animateCircularProgress();
-
-                    Log.d("Homepage", "✅ Stats loaded: " + placementReadiness + "%");
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    Log.e("Homepage", "Failed to load stats: " + error);
-                    // Use default value
-                    placementReadiness = 0;
-                    animateCircularProgress();
-                });
-            }
-        });
     }
 
     private void initViews() {
@@ -332,7 +292,7 @@ public class activity_homepage extends AppCompatActivity {
                 .setInterpolator(new OvershootInterpolator())
                 .start();
 
-        Toast.makeText(this, "✓ Selected: " + selectedJobRole, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "âœ“ Selected: " + selectedJobRole, Toast.LENGTH_SHORT).show();
         checkSelectionState();
     }
 
@@ -465,7 +425,7 @@ public class activity_homepage extends AppCompatActivity {
                 .setInterpolator(new OvershootInterpolator())
                 .start();
 
-        Toast.makeText(this, "✓ " + type + " Interview selected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "âœ“ " + type + " Interview selected", Toast.LENGTH_SHORT).show();
         checkSelectionState();
     }
 
@@ -520,11 +480,11 @@ public class activity_homepage extends AppCompatActivity {
 
     private void handleStartInterview() {
 
-        // 1️⃣ Validate Interview Type
+        // 1ï¸âƒ£ Validate Interview Type
         if (selectedInterviewType == null) {
             Toast.makeText(
                     this,
-                    "⚠️ Please select an interview type first",
+                    "âš ï¸ Please select an interview type first",
                     Toast.LENGTH_SHORT
             ).show();
 
@@ -533,11 +493,11 @@ public class activity_homepage extends AppCompatActivity {
             return;
         }
 
-        // 2️⃣ Validate Job Role
+        // 2ï¸âƒ£ Validate Job Role
         if (selectedJobRole == null) {
             Toast.makeText(
                     this,
-                    "⚠️ Please select a job role first",
+                    "âš ï¸ Please select a job role first",
                     Toast.LENGTH_SHORT
             ).show();
 
@@ -546,13 +506,13 @@ public class activity_homepage extends AppCompatActivity {
             return;
         }
 
-        // 3️⃣ Animate button press
+        // 3ï¸âƒ£ Animate button press
         animateButtonPress(btnStartInterview);
 
-        // 4️⃣ Small delay for animation smoothness
+        // 4ï¸âƒ£ Small delay for animation smoothness
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
 
-            // 5️⃣ Launch Interview Activity
+            // 5ï¸âƒ£ Launch Interview Activity
             Intent intent = new Intent(activity_homepage.this, InterviewActivity.class);
 
             intent.putExtra(
@@ -577,7 +537,7 @@ public class activity_homepage extends AppCompatActivity {
     }
 
     private void openDashboard() {
-        Toast.makeText(this, "📊 Opening Dashboard...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "ðŸ“Š Opening Dashboard...", Toast.LENGTH_SHORT).show();
         // TODO: Navigate to Dashboard Activity
         // Intent intent = new Intent(this, DashboardActivity.class);
         // intent.putExtra("readiness", placementReadiness);

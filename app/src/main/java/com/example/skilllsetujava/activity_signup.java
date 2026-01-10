@@ -27,7 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -35,16 +34,12 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/**
- * 📝 UPDATED Signup Activity with Firebase Authentication & Firestore
- */
 public class activity_signup extends AppCompatActivity {
 
     // UI Components
@@ -81,11 +76,9 @@ public class activity_signup extends AppCompatActivity {
     private CheckBox cbTerms;
     private MaterialButton btnBackStep3, btnRegister;
 
+    // Social Login
+    private MaterialButton btnGoogleSignup, btnTikTokSignup, btnFacebookSignup;
     private TextView tvLogin;
-
-    // Firebase
-    private FirebaseAuthHelper authHelper;
-    private FirebaseDatabaseHelper dbHelper;
 
     // Data Storage
     private String fullName, email, phone, dob, college, branch, year, cgpa, password;
@@ -93,22 +86,11 @@ public class activity_signup extends AppCompatActivity {
 
     private int currentStep = 0;
     private boolean isAnimating = false;
-    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
-
-        // Initialize Firebase
-        authHelper = new FirebaseAuthHelper(this);
-        dbHelper = new FirebaseDatabaseHelper();
-
-        // Check if already logged in
-        if (authHelper.isUserLoggedIn()) {
-            navigateToHome();
-            return;
-        }
 
         initViews();
         setupInitialState();
@@ -118,10 +100,12 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void initViews() {
+        // Main containers
         viewFlipper = findViewById(R.id.viewFlipper);
         backButton = findViewById(R.id.backButton);
         signupCard = findViewById(R.id.signupCard);
 
+        // Stepper
         step1Circle = findViewById(R.id.step1Circle);
         step2Circle = findViewById(R.id.step2Circle);
         step3Circle = findViewById(R.id.step3Circle);
@@ -134,10 +118,12 @@ public class activity_signup extends AppCompatActivity {
         progressLine1 = findViewById(R.id.progressLine1);
         progressLine2 = findViewById(R.id.progressLine2);
 
+        // Role selection
         btnStudentSignup = findViewById(R.id.btnStudentSignup);
         btnTPOSignup = findViewById(R.id.btnTPOSignup);
         selectorBackgroundSignup = findViewById(R.id.selectorBackgroundSignup);
 
+        // Step 1
         fullNameInputLayout = findViewById(R.id.fullNameInputLayout);
         emailInputLayoutSignup = findViewById(R.id.emailInputLayoutSignup);
         phoneInputLayout = findViewById(R.id.phoneInputLayout);
@@ -148,6 +134,7 @@ public class activity_signup extends AppCompatActivity {
         etDOB = findViewById(R.id.etDOB);
         btnNextStep1 = findViewById(R.id.btnNextStep1);
 
+        // Step 2
         collegeInputLayout = findViewById(R.id.collegeInputLayout);
         branchInputLayout = findViewById(R.id.branchInputLayout);
         yearInputLayout = findViewById(R.id.yearInputLayout);
@@ -159,6 +146,7 @@ public class activity_signup extends AppCompatActivity {
         btnBackStep2 = findViewById(R.id.btnBackStep2);
         btnNextStep2 = findViewById(R.id.btnNextStep2);
 
+        // Step 3
         createPasswordInputLayout = findViewById(R.id.createPasswordInputLayout);
         confirmPasswordInputLayout = findViewById(R.id.confirmPasswordInputLayout);
         etCreatePassword = findViewById(R.id.etCreatePassword);
@@ -169,10 +157,12 @@ public class activity_signup extends AppCompatActivity {
         btnBackStep3 = findViewById(R.id.btnBackStep3);
         btnRegister = findViewById(R.id.btnRegister);
 
+        // Bottom
         tvLogin = findViewById(R.id.tvLogin);
     }
 
     private void setupInitialState() {
+        // Set selector position for Student
         selectorBackgroundSignup.post(() -> {
             int width = btnStudentSignup.getWidth();
             ViewGroup.LayoutParams params = selectorBackgroundSignup.getLayoutParams();
@@ -184,11 +174,13 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void setupListeners() {
+        // Back button
         backButton.setOnClickListener(v -> {
             animateClick(backButton);
             onBackPressed();
         });
 
+        // Role selection
         btnStudentSignup.setOnClickListener(v -> {
             if (!isStudentSelected && !isAnimating) {
                 selectRole(true);
@@ -201,11 +193,14 @@ public class activity_signup extends AppCompatActivity {
             }
         });
 
+        // Step 1
         btnNextStep1.setOnClickListener(v -> validateAndProceedStep1());
 
+        // Date picker
         etDOB.setOnClickListener(v -> showDatePicker());
         dobInputLayout.setEndIconOnClickListener(v -> showDatePicker());
 
+        // Email validation
         etEmailSignup.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -225,12 +220,15 @@ public class activity_signup extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
+        // Step 2
         btnBackStep2.setOnClickListener(v -> goToPreviousStep());
         btnNextStep2.setOnClickListener(v -> validateAndProceedStep2());
 
+        // Step 3
         btnBackStep3.setOnClickListener(v -> goToPreviousStep());
         btnRegister.setOnClickListener(v -> validateAndRegister());
 
+        // Password strength
         etCreatePassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -244,6 +242,7 @@ public class activity_signup extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
+        // Login redirect
         tvLogin.setOnClickListener(v -> {
             Intent intent = new Intent(activity_signup.this, activity_login.class);
             startActivity(intent);
@@ -259,8 +258,10 @@ public class activity_signup extends AppCompatActivity {
         int targetX = isStudent ? 0 : btnTPOSignup.getLeft() - btnStudentSignup.getLeft();
 
         ObjectAnimator slideAnimator = ObjectAnimator.ofFloat(
-                selectorBackgroundSignup, "translationX",
-                selectorBackgroundSignup.getTranslationX(), targetX
+                selectorBackgroundSignup,
+                "translationX",
+                selectorBackgroundSignup.getTranslationX(),
+                targetX
         );
         slideAnimator.setDuration(300);
         slideAnimator.setInterpolator(new OvershootInterpolator(1.5f));
@@ -274,6 +275,7 @@ public class activity_signup extends AppCompatActivity {
 
         slideAnimator.start();
 
+        // Update text colors
         btnStudentSignup.setTextColor(ContextCompat.getColor(this,
                 isStudent ? R.color.primary_purple : R.color.white));
         btnTPOSignup.setTextColor(ContextCompat.getColor(this,
@@ -281,11 +283,13 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void validateAndProceedStep1() {
+        // Get values
         fullName = etFullName.getText().toString().trim();
         email = etEmailSignup.getText().toString().trim();
         phone = etPhone.getText().toString().trim();
         dob = etDOB.getText().toString().trim();
 
+        // Validate Full Name
         if (fullName.isEmpty()) {
             fullNameInputLayout.setError("Full name is required");
             shakeView(fullNameInputLayout);
@@ -293,6 +297,7 @@ public class activity_signup extends AppCompatActivity {
         }
         fullNameInputLayout.setError(null);
 
+        // Validate Email
         if (email.isEmpty()) {
             emailInputLayoutSignup.setError("Email is required");
             shakeView(emailInputLayoutSignup);
@@ -305,6 +310,7 @@ public class activity_signup extends AppCompatActivity {
         }
         emailInputLayoutSignup.setError(null);
 
+        // Validate Phone
         if (phone.isEmpty()) {
             phoneInputLayout.setError("Phone number is required");
             shakeView(phoneInputLayout);
@@ -317,6 +323,7 @@ public class activity_signup extends AppCompatActivity {
         }
         phoneInputLayout.setError(null);
 
+        // Validate DOB
         if (dob.isEmpty()) {
             dobInputLayout.setError("Date of birth is required");
             shakeView(dobInputLayout);
@@ -324,15 +331,18 @@ public class activity_signup extends AppCompatActivity {
         }
         dobInputLayout.setError(null);
 
+        // Proceed to next step
         goToNextStep();
     }
 
     private void validateAndProceedStep2() {
+        // Get values
         college = etCollege.getText().toString().trim();
         branch = etBranch.getText().toString().trim();
         year = etYear.getText().toString().trim();
         cgpa = etCGPA.getText().toString().trim();
 
+        // Validate College
         if (college.isEmpty()) {
             collegeInputLayout.setError("College name is required");
             shakeView(collegeInputLayout);
@@ -340,6 +350,7 @@ public class activity_signup extends AppCompatActivity {
         }
         collegeInputLayout.setError(null);
 
+        // Validate Branch
         if (branch.isEmpty()) {
             branchInputLayout.setError("Branch is required");
             shakeView(branchInputLayout);
@@ -347,6 +358,7 @@ public class activity_signup extends AppCompatActivity {
         }
         branchInputLayout.setError(null);
 
+        // Validate Year
         if (year.isEmpty()) {
             yearInputLayout.setError("Year is required");
             shakeView(yearInputLayout);
@@ -354,6 +366,7 @@ public class activity_signup extends AppCompatActivity {
         }
         yearInputLayout.setError(null);
 
+        // Validate CGPA
         if (cgpa.isEmpty()) {
             cgpaInputLayout.setError("CGPA/Percentage is required");
             shakeView(cgpaInputLayout);
@@ -361,18 +374,16 @@ public class activity_signup extends AppCompatActivity {
         }
         cgpaInputLayout.setError(null);
 
+        // Proceed to next step
         goToNextStep();
     }
 
-    /**
-     * 🔥 FIREBASE: Register User
-     */
     private void validateAndRegister() {
-        if (isLoading) return;
-
+        // Get password values
         password = etCreatePassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
+        // Validate Password
         if (password.isEmpty()) {
             createPasswordInputLayout.setError("Password is required");
             shakeView(createPasswordInputLayout);
@@ -385,6 +396,7 @@ public class activity_signup extends AppCompatActivity {
         }
         createPasswordInputLayout.setError(null);
 
+        // Validate Confirm Password
         if (confirmPassword.isEmpty()) {
             confirmPasswordInputLayout.setError("Please confirm your password");
             shakeView(confirmPasswordInputLayout);
@@ -397,85 +409,26 @@ public class activity_signup extends AppCompatActivity {
         }
         confirmPasswordInputLayout.setError(null);
 
+        // Validate Terms
         if (!cbTerms.isChecked()) {
             Toast.makeText(this, "Please agree to Terms & Privacy Policy", Toast.LENGTH_SHORT).show();
             shakeView(cbTerms);
             return;
         }
 
-        // Show loading
-        showLoading(true);
+        // Animate button and register
+        animateButtonPress(btnRegister);
 
-        // Create Firebase account
-        authHelper.signUpWithEmail(email, password, new FirebaseAuthHelper.AuthCallback() {
-            @Override
-            public void onSuccess(FirebaseUser user) {
-                // Save user profile to Firestore
-                saveUserProfile(user.getUid());
-            }
+        new Handler().postDelayed(() -> {
+            // TODO: Save data locally or to Firebase
+            // For now, just show success and navigate
+            Toast.makeText(this, "âœ… Registration Successful!", Toast.LENGTH_SHORT).show();
 
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-
-                    String userFriendlyError = getUserFriendlyError(error);
-
-                    new AlertDialog.Builder(activity_signup.this)
-                            .setTitle("Registration Failed")
-                            .setMessage(userFriendlyError)
-                            .setPositiveButton("OK", null)
-                            .show();
-                });
-            }
-        });
-    }
-
-    /**
-     * 💾 Save User Profile to Firestore
-     */
-    private void saveUserProfile(String userId) {
-        FirebaseDatabaseHelper.UserProfile profile = new FirebaseDatabaseHelper.UserProfile();
-        profile.fullName = fullName;
-        profile.email = email;
-        profile.phone = phone;
-        profile.dob = dob;
-        profile.role = isStudentSelected ? "student" : "tpo";
-        profile.college = college;
-        profile.branch = branch;
-        profile.year = year;
-        profile.cgpa = cgpa;
-        profile.profileImageUrl = "";
-
-        dbHelper.createUserProfile(userId, profile, new FirebaseDatabaseHelper.DatabaseCallback() {
-            @Override
-            public void onSuccess() {
-                runOnUiThread(() -> {
-                    showLoading(false);
-
-                    Toast.makeText(activity_signup.this,
-                            "✅ Registration Successful!",
-                            Toast.LENGTH_SHORT).show();
-
-                    // Navigate to home
-                    new Handler().postDelayed(() -> navigateToHome(), 500);
-                });
-            }
-
-            @Override
-            public void onError(String error) {
-                runOnUiThread(() -> {
-                    showLoading(false);
-
-                    // Account created but profile save failed
-                    new AlertDialog.Builder(activity_signup.this)
-                            .setTitle("Warning")
-                            .setMessage("Account created but profile save failed. You can update it later.")
-                            .setPositiveButton("Continue", (dialog, which) -> navigateToHome())
-                            .show();
-                });
-            }
-        });
+            // Navigate to login
+            Intent intent = new Intent(activity_signup.this, activity_login.class);
+            startActivity(intent);
+            finish();
+        }, 300);
     }
 
     private void goToNextStep() {
@@ -493,6 +446,7 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void animateStepTransition(boolean forward) {
+        // Animate ViewFlipper
         if (forward) {
             viewFlipper.setInAnimation(this, R.anim.slide_in_right);
             viewFlipper.setOutAnimation(this, R.anim.slide_out_left);
@@ -503,10 +457,12 @@ public class activity_signup extends AppCompatActivity {
             viewFlipper.showPrevious();
         }
 
+        // Update stepper UI
         updateStepperUI();
     }
 
     private void updateStepperUI() {
+        // Reset all steps
         resetStepCircle(step1Circle, step1Number, step1Label);
         resetStepCircle(step2Circle, step2Number, step2Label);
         resetStepCircle(step3Circle, step3Number, step3Label);
@@ -514,6 +470,7 @@ public class activity_signup extends AppCompatActivity {
         progressLine1.setBackgroundResource(R.drawable.progress_line_inactive);
         progressLine2.setBackgroundResource(R.drawable.progress_line_inactive);
 
+        // Highlight current and completed steps
         if (currentStep >= 0) {
             activateStepCircle(step1Circle, step1Number, step1Label);
         }
@@ -542,6 +499,7 @@ public class activity_signup extends AppCompatActivity {
         number.setAlpha(1f);
         label.setAlpha(1f);
 
+        // Bounce animation
         circle.animate()
                 .scaleX(1.2f)
                 .scaleY(1.2f)
@@ -572,6 +530,7 @@ public class activity_signup extends AppCompatActivity {
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
 
+        // Set max date to 18 years ago
         Calendar maxDate = Calendar.getInstance();
         maxDate.add(Calendar.YEAR, -18);
         datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
@@ -581,8 +540,7 @@ public class activity_signup extends AppCompatActivity {
 
     private void setupYearDropdown() {
         String[] years = {"1st Year", "2nd Year", "3rd Year", "4th Year", "Final Year"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_dropdown_item_1line, years);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, years);
         etYear.setAdapter(adapter);
     }
 
@@ -613,11 +571,20 @@ public class activity_signup extends AppCompatActivity {
 
         int strength = 0;
 
+        // Length
         if (password.length() >= 8) strength += 25;
         if (password.length() >= 12) strength += 15;
+
+        // Contains lowercase
         if (Pattern.compile("[a-z]").matcher(password).find()) strength += 15;
+
+        // Contains uppercase
         if (Pattern.compile("[A-Z]").matcher(password).find()) strength += 15;
+
+        // Contains digit
         if (Pattern.compile("[0-9]").matcher(password).find()) strength += 15;
+
+        // Contains special character
         if (Pattern.compile("[!@#$%^&*(),.?\":{}|<>]").matcher(password).find()) strength += 15;
 
         return Math.min(strength, 100);
@@ -628,9 +595,11 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void animateEntrance() {
+        // Initially hide
         signupCard.setAlpha(0f);
         signupCard.setTranslationY(50f);
 
+        // Animate in
         new Handler().postDelayed(() -> {
             signupCard.animate()
                     .alpha(1f)
@@ -639,32 +608,6 @@ public class activity_signup extends AppCompatActivity {
                     .setInterpolator(new DecelerateInterpolator())
                     .start();
         }, 200);
-    }
-
-    private void navigateToHome() {
-        Intent intent = new Intent(activity_signup.this, activity_homepage.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    private void showLoading(boolean show) {
-        isLoading = show;
-        btnRegister.setEnabled(!show);
-        btnRegister.setText(show ? "Creating Account..." : "Register");
-        btnBackStep3.setEnabled(!show);
-    }
-
-    private String getUserFriendlyError(String error) {
-        if (error.contains("email-already-in-use")) {
-            return "This email is already registered. Please login instead.";
-        } else if (error.contains("weak-password")) {
-            return "Password is too weak. Use at least 8 characters with letters and numbers.";
-        } else if (error.contains("invalid-email")) {
-            return "Invalid email format.";
-        } else {
-            return "Registration failed: " + error;
-        }
     }
 
     private void shakeView(View view) {
@@ -684,6 +627,22 @@ public class activity_signup extends AppCompatActivity {
                                 .scaleX(1f)
                                 .scaleY(1f)
                                 .setDuration(100)
+                                .start()
+                )
+                .start();
+    }
+
+    private void animateButtonPress(View button) {
+        button.animate()
+                .scaleX(0.95f)
+                .scaleY(0.95f)
+                .setDuration(100)
+                .withEndAction(() ->
+                        button.animate()
+                                .scaleX(1f)
+                                .scaleY(1f)
+                                .setDuration(100)
+                                .setInterpolator(new OvershootInterpolator())
                                 .start()
                 )
                 .start();

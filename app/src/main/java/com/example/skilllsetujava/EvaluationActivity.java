@@ -16,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -34,7 +33,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * ✨ ENHANCED Evaluation Screen
+ * âœ¨ ENHANCED Evaluation Screen
  *
  * Improvements:
  * - Larger, more readable text
@@ -134,10 +133,10 @@ public class EvaluationActivity extends AppCompatActivity {
 
         tvInterviewType.setText(interviewType + " Interview");
         tvJobRole.setText(jobRole);
-        tvTotalTime.setText("⏱️ " + totalTime);
+        tvTotalTime.setText("â±ï¸ " + totalTime);
 
         if (aiSource != null) {
-            Log.d("Evaluation", "✅ Powered by: " + aiSource);
+            Log.d("Evaluation", "âœ… Powered by: " + aiSource);
         }
     }
 
@@ -172,7 +171,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Display evaluation with smooth animations
+     * âœ¨ ENHANCED: Display evaluation with smooth animations
      */
     private void displayEvaluationWithAnimations() {
         circularProgressContainer.setAlpha(0f);
@@ -185,7 +184,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ SECTION 1: Overall Score with bounce animation
+     * âœ¨ SECTION 1: Overall Score with bounce animation
      */
     private void animateOverallScore() {
         // Bounce in animation
@@ -225,7 +224,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ SECTION 2: Question Analysis with staggered fade-in
+     * âœ¨ SECTION 2: Question Analysis with staggered fade-in
      */
     private void displayQuestionAnalysis() {
         if (evaluation == null || evaluation.questionAnalysis == null || evaluation.questionAnalysis.isEmpty()) {
@@ -233,7 +232,7 @@ public class EvaluationActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d("Evaluation", "✅ Displaying " + evaluation.questionAnalysis.size() + " question analyses");
+        Log.d("Evaluation", "âœ… Displaying " + evaluation.questionAnalysis.size() + " question analyses");
 
         tvQuestionAnalysisTitle.setVisibility(View.VISIBLE);
         tvQuestionAnalysisTitle.setAlpha(0f);
@@ -263,7 +262,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better question card with improved styling
+     * âœ¨ ENHANCED: Better question card with improved styling
      */
     private CardView createEnhancedQuestionCard(GroqAPIService.QuestionAnalysis analysis,
                                                 String questionText, int index) {
@@ -277,7 +276,7 @@ public class EvaluationActivity extends AppCompatActivity {
         card.setRadius(dpToPx(20));
         card.setCardElevation(dpToPx(4));
 
-        // ✨ Better color coding with cyan theme
+        // âœ¨ Better color coding with cyan theme
         int bgColor;
         if (analysis.score >= 8.0) bgColor = 0xFF1A1F35; // Dark blue
         else if (analysis.score >= 6.0) bgColor = 0xFF2D1B4E; // Dark purple
@@ -296,7 +295,7 @@ public class EvaluationActivity extends AppCompatActivity {
         TextView tvQNum = new TextView(this);
         tvQNum.setText("Question " + analysis.questionNumber);
         tvQNum.setTextColor(0xFFFFFFFF);
-        tvQNum.setTextSize(19); // ✨ Larger text
+        tvQNum.setTextSize(19); // âœ¨ Larger text
         tvQNum.setTypeface(null, android.graphics.Typeface.BOLD);
         LinearLayout.LayoutParams qNumParams = new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
@@ -307,12 +306,12 @@ public class EvaluationActivity extends AppCompatActivity {
         // Score badge
         TextView tvScore = new TextView(this);
         tvScore.setText(String.format(Locale.US, "%.1f/10", analysis.score));
-        tvScore.setTextSize(18); // ✨ Larger text
+        tvScore.setTextSize(18); // âœ¨ Larger text
         tvScore.setTypeface(null, android.graphics.Typeface.BOLD);
         tvScore.setPadding(dpToPx(18), dpToPx(8), dpToPx(18), dpToPx(8));
         tvScore.setBackgroundResource(R.drawable.badge_background);
 
-        // ✨ Cyan theme colors
+        // âœ¨ Cyan theme colors
         int scoreColor;
         if (analysis.score >= 8.0) scoreColor = 0xFF00E5CC; // Bright cyan
         else if (analysis.score >= 6.0) scoreColor = 0xFFFFA500; // Orange
@@ -335,16 +334,16 @@ public class EvaluationActivity extends AppCompatActivity {
 
         // Question asked
         TextView tvQuestionLabel = new TextView(this);
-        tvQuestionLabel.setText("📝 Question Asked:");
+        tvQuestionLabel.setText("ðŸ“ Question Asked:");
         tvQuestionLabel.setTextColor(0xCCFFFFFF);
-        tvQuestionLabel.setTextSize(15); // ✨ Larger text
+        tvQuestionLabel.setTextSize(15); // âœ¨ Larger text
         tvQuestionLabel.setTypeface(null, android.graphics.Typeface.BOLD);
         layout.addView(tvQuestionLabel);
 
         TextView tvQuestion = new TextView(this);
         tvQuestion.setText(questionText);
         tvQuestion.setTextColor(0xFFFFFFFF);
-        tvQuestion.setTextSize(16); // ✨ Larger text
+        tvQuestion.setTextSize(16); // âœ¨ Larger text
         tvQuestion.setLineSpacing(6, 1f);
         LinearLayout.LayoutParams qParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -356,16 +355,16 @@ public class EvaluationActivity extends AppCompatActivity {
 
         // Your answer
         TextView tvAnswerLabel = new TextView(this);
-        tvAnswerLabel.setText("💭 Your Answer:");
+        tvAnswerLabel.setText("ðŸ’­ Your Answer:");
         tvAnswerLabel.setTextColor(0xCCFFFFFF);
-        tvAnswerLabel.setTextSize(15); // ✨ Larger text
+        tvAnswerLabel.setTextSize(15); // âœ¨ Larger text
         tvAnswerLabel.setTypeface(null, android.graphics.Typeface.BOLD);
         layout.addView(tvAnswerLabel);
 
         TextView tvAnswer = new TextView(this);
         tvAnswer.setText(analysis.whatYouAnswered);
         tvAnswer.setTextColor(0xFFFFFFFF);
-        tvAnswer.setTextSize(16); // ✨ Larger text
+        tvAnswer.setTextSize(16); // âœ¨ Larger text
         tvAnswer.setLineSpacing(6, 1f);
         LinearLayout.LayoutParams aParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -378,16 +377,16 @@ public class EvaluationActivity extends AppCompatActivity {
         // What was good
         if (analysis.whatWasGood != null && !analysis.whatWasGood.isEmpty()) {
             TextView tvGoodLabel = new TextView(this);
-            tvGoodLabel.setText("✅ What Was Good:");
-            tvGoodLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvGoodLabel.setTextSize(15); // ✨ Larger text
+            tvGoodLabel.setText("âœ… What Was Good:");
+            tvGoodLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvGoodLabel.setTextSize(15); // âœ¨ Larger text
             tvGoodLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(tvGoodLabel);
 
             TextView tvGood = new TextView(this);
             tvGood.setText(analysis.whatWasGood);
             tvGood.setTextColor(0xFFFFFFFF);
-            tvGood.setTextSize(16); // ✨ Larger text
+            tvGood.setTextSize(16); // âœ¨ Larger text
             tvGood.setLineSpacing(6, 1f);
             LinearLayout.LayoutParams gParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -401,16 +400,16 @@ public class EvaluationActivity extends AppCompatActivity {
         // What was missing
         if (analysis.whatWasMissing != null && !analysis.whatWasMissing.isEmpty()) {
             TextView tvMissingLabel = new TextView(this);
-            tvMissingLabel.setText("⚠️ What Was Missing:");
+            tvMissingLabel.setText("âš ï¸ What Was Missing:");
             tvMissingLabel.setTextColor(0xFFFFA500);
-            tvMissingLabel.setTextSize(15); // ✨ Larger text
+            tvMissingLabel.setTextSize(15); // âœ¨ Larger text
             tvMissingLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(tvMissingLabel);
 
             TextView tvMissing = new TextView(this);
             tvMissing.setText(analysis.whatWasMissing);
             tvMissing.setTextColor(0xFFFFFFFF);
-            tvMissing.setTextSize(16); // ✨ Larger text
+            tvMissing.setTextSize(16); // âœ¨ Larger text
             tvMissing.setLineSpacing(6, 1f);
             LinearLayout.LayoutParams mParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -424,16 +423,16 @@ public class EvaluationActivity extends AppCompatActivity {
         // Ideal answer
         if (analysis.idealAnswer != null && !analysis.idealAnswer.isEmpty()) {
             TextView tvIdealLabel = new TextView(this);
-            tvIdealLabel.setText("🎯 Ideal Answer Should Include:");
-            tvIdealLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvIdealLabel.setTextSize(15); // ✨ Larger text
+            tvIdealLabel.setText("ðŸŽ¯ Ideal Answer Should Include:");
+            tvIdealLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvIdealLabel.setTextSize(15); // âœ¨ Larger text
             tvIdealLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(tvIdealLabel);
 
             TextView tvIdeal = new TextView(this);
             tvIdeal.setText(analysis.idealAnswer);
             tvIdeal.setTextColor(0xFFFFFFFF);
-            tvIdeal.setTextSize(16); // ✨ Larger text
+            tvIdeal.setTextSize(16); // âœ¨ Larger text
             tvIdeal.setLineSpacing(6, 1f);
             LinearLayout.LayoutParams iParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -446,7 +445,7 @@ public class EvaluationActivity extends AppCompatActivity {
 
         card.addView(layout);
 
-        // ✨ Smooth slide-up animation
+        // âœ¨ Smooth slide-up animation
         card.setAlpha(0f);
         card.setTranslationY(40f);
         card.animate()
@@ -461,7 +460,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ SECTION 3: Coach Feedback with fade-in
+     * âœ¨ SECTION 3: Coach Feedback with fade-in
      */
     private void displayCoachFeedback() {
         if (evaluation.coachFeedback == null || evaluation.coachFeedback.isEmpty()) {
@@ -470,7 +469,7 @@ public class EvaluationActivity extends AppCompatActivity {
         }
 
         tvCoachFeedback.setText(evaluation.coachFeedback);
-        tvCoachFeedback.setTextSize(17); // ✨ Larger text
+        tvCoachFeedback.setTextSize(17); // âœ¨ Larger text
 
         coachFeedbackCard.setAlpha(0f);
         coachFeedbackCard.setTranslationY(30f);
@@ -484,7 +483,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ SECTION 4: Action Plan with slide-in animation
+     * âœ¨ SECTION 4: Action Plan with slide-in animation
      */
     private void displayActionPlan() {
         if (evaluation.immediateActions == null || evaluation.immediateActions.isEmpty()) {
@@ -512,7 +511,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ ENHANCED: Better action card with cyan theme
+     * âœ¨ ENHANCED: Better action card with cyan theme
      */
     private CardView createEnhancedActionCard(GroqAPIService.ImmediateAction action, int index) {
         CardView card = new CardView(this);
@@ -533,12 +532,12 @@ public class EvaluationActivity extends AppCompatActivity {
         // Priority badge
         TextView tvPriority = new TextView(this);
         tvPriority.setText(action.priority);
-        tvPriority.setTextSize(13); // ✨ Larger text
+        tvPriority.setTextSize(13); // âœ¨ Larger text
         tvPriority.setTypeface(null, android.graphics.Typeface.BOLD);
         tvPriority.setPadding(dpToPx(14), dpToPx(6), dpToPx(14), dpToPx(6));
         tvPriority.setBackgroundResource(R.drawable.badge_background);
 
-        // ✨ Cyan theme colors
+        // âœ¨ Cyan theme colors
         int priorityColor = action.priority.equalsIgnoreCase("HIGH") ? 0xFFFF6B6B :
                 action.priority.equalsIgnoreCase("MEDIUM") ? 0xFFFFA500 : 0xFF00E5CC;
         tvPriority.setTextColor(priorityColor);
@@ -549,7 +548,7 @@ public class EvaluationActivity extends AppCompatActivity {
         TextView tvAction = new TextView(this);
         tvAction.setText(action.action);
         tvAction.setTextColor(0xFFFFFFFF);
-        tvAction.setTextSize(17); // ✨ Larger text
+        tvAction.setTextSize(17); // âœ¨ Larger text
         tvAction.setTypeface(null, android.graphics.Typeface.BOLD);
         tvAction.setLineSpacing(4, 1f);
         LinearLayout.LayoutParams actionParams = new LinearLayout.LayoutParams(
@@ -562,9 +561,9 @@ public class EvaluationActivity extends AppCompatActivity {
 
         // Why
         TextView tvWhy = new TextView(this);
-        tvWhy.setText("💡 " + action.why);
+        tvWhy.setText("ðŸ’¡ " + action.why);
         tvWhy.setTextColor(0xEEFFFFFF);
-        tvWhy.setTextSize(15); // ✨ Larger text
+        tvWhy.setTextSize(15); // âœ¨ Larger text
         tvWhy.setLineSpacing(5, 1f);
         LinearLayout.LayoutParams whyParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -577,17 +576,17 @@ public class EvaluationActivity extends AppCompatActivity {
         // Resources
         if (action.resources != null && !action.resources.isEmpty()) {
             TextView tvResourcesLabel = new TextView(this);
-            tvResourcesLabel.setText("📚 Resources:");
-            tvResourcesLabel.setTextColor(0xFF00E5CC); // ✨ Cyan
-            tvResourcesLabel.setTextSize(15); // ✨ Larger text
+            tvResourcesLabel.setText("ðŸ“š Resources:");
+            tvResourcesLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
+            tvResourcesLabel.setTextSize(15); // âœ¨ Larger text
             tvResourcesLabel.setTypeface(null, android.graphics.Typeface.BOLD);
             layout.addView(tvResourcesLabel);
 
             for (String resource : action.resources) {
                 TextView tvResource = new TextView(this);
-                tvResource.setText("• " + resource);
+                tvResource.setText("â€¢ " + resource);
                 tvResource.setTextColor(0xFFFFFFFF);
-                tvResource.setTextSize(15); // ✨ Larger text
+                tvResource.setTextSize(15); // âœ¨ Larger text
                 tvResource.setLineSpacing(3, 1f);
                 LinearLayout.LayoutParams rParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -601,7 +600,7 @@ public class EvaluationActivity extends AppCompatActivity {
 
         card.addView(layout);
 
-        // ✨ Staggered fade-in
+        // âœ¨ Staggered fade-in
         card.setAlpha(0f);
         card.setScaleX(0.95f);
         card.setScaleY(0.95f);
@@ -618,7 +617,7 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * ✨ Show action buttons with bounce animation
+     * âœ¨ Show action buttons with bounce animation
      */
     private void showButtons() {
         // Primary button (View Roadmap) - Big bounce
@@ -652,46 +651,56 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     /**
-     * 💾 Auto-save to history
+     * ðŸ’¾ Auto-save to history
      */
     private void autoSaveToHistory() {
-        // Get current user ID
-        FirebaseAuthHelper authHelper = new FirebaseAuthHelper(this);
-        String userId = authHelper.getCurrentUserId();
+        try {
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", Locale.getDefault()).format(new Date());
+            String interviewId = "interview_" + System.currentTimeMillis();
 
-        if (userId == null) {
-            Log.e("Evaluation", "❌ No user logged in!");
-            Toast.makeText(this, "Not logged in!", Toast.LENGTH_SHORT).show();
-            return;
+            JSONObject interviewData = new JSONObject();
+            interviewData.put("id", interviewId);
+            interviewData.put("timestamp", timestamp);
+            interviewData.put("jobRole", jobRole);
+            interviewData.put("interviewType", interviewType);
+            interviewData.put("totalTime", totalTime);
+            interviewData.put("overallScore", evaluation.overallScore);
+            interviewData.put("isRetake", isRetake);
+            interviewData.put("aiSource", aiSource);
+
+            if (evaluation.topStrengths != null) {
+                interviewData.put("topStrengths", new JSONArray(evaluation.topStrengths));
+            }
+            if (evaluation.criticalGaps != null) {
+                interviewData.put("criticalGaps", new JSONArray(evaluation.criticalGaps));
+            }
+
+            interviewData.put("coachFeedback", evaluation.coachFeedback);
+
+            JSONArray qaArray = new JSONArray();
+            for (GroqAPIService.QAPair qa : qaHistory) {
+                JSONObject qaObj = new JSONObject();
+                qaObj.put("question", qa.question);
+                qaObj.put("answer", qa.answer);
+                qaArray.put(qaObj);
+            }
+            interviewData.put("qaHistory", qaArray);
+
+            String existingData = prefs.getString("all_interviews", "[]");
+            JSONArray allInterviews = new JSONArray(existingData);
+            allInterviews.put(interviewData);
+
+            prefs.edit()
+                    .putString("all_interviews", allInterviews.toString())
+                    .putFloat(jobRole + "_" + interviewType + "_last_score", (float) evaluation.overallScore)
+                    .putLong(jobRole + "_" + interviewType + "_last_timestamp", System.currentTimeMillis())
+                    .apply();
+
+            Log.d("Evaluation", "âœ… Interview saved: " + interviewId);
+
+        } catch (Exception e) {
+            Log.e("Evaluation", "âŒ Save failed", e);
         }
-
-        // Prepare interview data
-        FirebaseDatabaseHelper.InterviewData interviewData =
-                new FirebaseDatabaseHelper.InterviewData();
-        interviewData.interviewType = interviewType;
-        interviewData.jobRole = jobRole;
-        interviewData.totalTime = totalTime;
-        interviewData.isRetake = isRetake;
-        interviewData.aiSource = aiSource;
-        interviewData.evaluation = evaluation;
-        interviewData.trainingPlan = trainingPlan;
-        interviewData.qaHistory = qaHistory;
-
-        // Save to Firebase
-        FirebaseDatabaseHelper dbHelper = new FirebaseDatabaseHelper();
-        dbHelper.saveInterview(userId, interviewData,
-                new FirebaseDatabaseHelper.DatabaseCallback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.d("Evaluation", "✅ Interview saved to Firebase!");
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        Log.e("Evaluation", "❌ Failed to save: " + error);
-                        // Still continue - don't block user
-                    }
-                });
     }
 
     private List<GroqAPIService.QAPair> parseQaHistory(String json) {
@@ -712,12 +721,12 @@ public class EvaluationActivity extends AppCompatActivity {
     }
 
     private String getPerformanceLevel(double score) {
-        if (score >= 9.0) return "🌟 Outstanding";
-        if (score >= 8.0) return "🎯 Excellent";
-        if (score >= 7.0) return "✅ Good";
-        if (score >= 6.0) return "📈 Average";
-        if (score >= 5.0) return "⚠️ Needs Work";
-        return "❌ Poor";
+        if (score >= 9.0) return "ðŸŒŸ Outstanding";
+        if (score >= 8.0) return "ðŸŽ¯ Excellent";
+        if (score >= 7.0) return "âœ… Good";
+        if (score >= 6.0) return "ðŸ“ˆ Average";
+        if (score >= 5.0) return "âš ï¸ Needs Work";
+        return "âŒ Poor";
     }
 
     private int dpToPx(int dp) {
