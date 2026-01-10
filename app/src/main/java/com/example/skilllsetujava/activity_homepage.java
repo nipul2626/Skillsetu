@@ -6,18 +6,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -29,6 +28,7 @@ import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class activity_homepage extends AppCompatActivity {
 
@@ -94,7 +94,18 @@ public class activity_homepage extends AppCompatActivity {
         // Animate circular progress
         animateCircularProgress();
 
-
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                    if (hasWindowFocus()) {
+                        finish();
+                    }
+                }
+            }
+        });
     }
 
     private void initViews() {
@@ -677,28 +688,5 @@ public class activity_homepage extends AppCompatActivity {
         pulse.start();
     }
 
-    @Override
-    public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
-
     // ==================== INNER CLASS ====================
-
-    private static class JobRoleCard {
-        CardView cardView;
-        ImageView icon;
-        TextView text;
-        String roleName;
-
-        JobRoleCard(CardView cardView, ImageView icon, TextView text, String roleName) {
-            this.cardView = cardView;
-            this.icon = icon;
-            this.text = text;
-            this.roleName = roleName;
-        }
-    }
 }
