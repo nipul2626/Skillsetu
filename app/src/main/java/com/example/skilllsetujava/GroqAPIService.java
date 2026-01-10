@@ -50,7 +50,7 @@ public class GroqAPIService {
      * ðŸŽ¯ Generate ALL 10 questions
      */
     public void generateAllQuestions(String jobRole, String interviewType, BulkQuestionCallback callback) {
-        Log.d(TAG, "ðŸš€ Generating questions...");
+        Log.d(TAG, "🚀 Generating questions...");
 
         if (!isValidApiKey()) {
             callback.onError("Invalid API Key");
@@ -67,21 +67,33 @@ public class GroqAPIService {
 
                     if (response != null) {
                         List<Question> questions = parseBulkQuestions(response);
-                        if (questions.size() == 10) {
+
+                        // ✅ FIX: Accept 10-15 questions, use first 10
+                        if (questions.size() >= 10) {
+                            if (questions.size() > 10) {
+                                Log.w(TAG, "⚠️ Got " + questions.size() + " questions, using first 10");
+                                questions = questions.subList(0, 10);
+                            }
+
                             apiCallCount++;
-                            Log.d(TAG, "âœ… Questions generated! API calls: " + apiCallCount);
+                            Log.d(TAG, "✅ Questions generated! API calls: " + apiCallCount);
                             callback.onSuccess(questions);
                             return;
+                        } else {
+                            Log.w(TAG, "⚠️ Only got " + questions.size() + " questions, retrying...");
                         }
                     }
                 } catch (Exception e) {
-                    Log.e(TAG, "âŒ Attempt " + attempt + " failed", e);
-                    if (attempt >= MAX_RETRIES) {
-                        callback.onError("Failed after " + MAX_RETRIES + " attempts");
-                        return;
-                    }
-                    try { Thread.sleep(1000); } catch (InterruptedException ie) {}
+                    Log.e(TAG, "❌ Attempt " + attempt + " failed", e);
                 }
+
+                if (attempt >= MAX_RETRIES) {
+                    Log.e(TAG, "❌ All retries exhausted");
+                    callback.onError("Failed after " + MAX_RETRIES + " attempts");
+                    return;
+                }
+
+                try { Thread.sleep(1000); } catch (InterruptedException ie) {}
             }
         });
     }
