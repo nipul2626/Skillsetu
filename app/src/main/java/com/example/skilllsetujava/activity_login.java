@@ -37,11 +37,19 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+
 import com.example.skilllsetujava.api.RetrofitClient;
-import com.example.skilllsetujava.api.models.*;
+import com.example.skilllsetujava.api.models.LoginRequest;
+import com.example.skilllsetujava.api.models.LoginResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import android.content.SharedPreferences;
+import android.util.Log;
+import android.widget.Toast;
+import android.content.Intent;
+import java.util.Map;
 
 public class activity_login extends AppCompatActivity {
 
@@ -83,6 +91,12 @@ public class activity_login extends AppCompatActivity {
         // Setup Sign Up text with color
         setupSignUpText();
 
+        // Test connection when activity starts
+        testBackendConnection();
+
+
+        // Set login button click listener
+        btnLogin.setOnClickListener(v -> handleLogin());
     }
 
     private void initViews() {
@@ -471,53 +485,146 @@ public class activity_login extends AppCompatActivity {
         tvSignUp.setText(spannableString);
     }
 
+
+    /**
+     * Test if backend is reachable
+     */
+    private void testBackendConnection() {
+        Log.d("Login", "Testing backend connection to: " + RetrofitClient.getBaseUrl());
+
+        RetrofitClient.getApiService()
+                .testConnection()
+                .enqueue(new Callback<Map<String, String>>() {
+                    @Override
+                    public void onResponse(Call<Map<String, String>> call, Response<Map<String, String>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            String message = response.body().get("message");
+                            Log.d("Login", "✅ Backend connection successful: " + message);
+                            Toast.makeText(activity_login.this,
+                                    "✅ Backend connected: " + message,
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Log.e("Login", "❌ Backend responded with error: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                        Log.e("Login", "❌ Cannot connect to backend: " + t.getMessage(), t);
+                        Toast.makeText(activity_login.this,
+                                "❌ Backend not reachable. Check:\n" +
+                                        "1. Backend is running on port 8081\n" +
+                                        "2. Using correct URL: " + RetrofitClient.getBaseUrl(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+
+
+    /**
+     * Call this method when login button is clicked
+     */
     private void handleLogin() {
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+        // Validation
+        if (email.isEmpty()) {
+            etEmail.setError("Email is required");
+            etEmail.requestFocus();
             return;
         }
 
+        if (password.isEmpty()) {
+            etPassword.setError("Password is required");
+            etPassword.requestFocus();
+            return;
+        }
+
+        // Disable button and show loading
         btnLogin.setEnabled(false);
         btnLogin.setText("Logging in...");
 
+        Log.d("Login", "Attempting login for: " + email);
+
+        // Create request
         LoginRequest request = new LoginRequest(email, password);
 
+        // Make API call
         RetrofitClient.getApiService()
                 .login(request)
                 .enqueue(new Callback<LoginResponse>() {
                     @Override
                     public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                        // Re-enable button
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
 
                         if (response.isSuccessful() && response.body() != null) {
                             LoginResponse loginResponse = response.body();
 
-                            // ✅ FIXED: Corrected SharedPreferences implementation
-                            SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
-                            prefs.edit()
-                                    .putString("jwt_token", loginResponse.getToken())
-                                    .putLong("student_id", loginResponse.getStudentId())
-                                    .putString("email", loginResponse.getEmail())
-                                    .apply();
+                            Log.d("Login", "✅ Login successful!");
+                            Log.d("Login", "Token: " + loginResponse.getToken());
+                            Log.d("Login", "Student ID: " + loginResponse.getStudentId());
+                            Log.d("Login", "Email: " + loginResponse.getEmail());
+                            Log.d("Login", "Role: " + loginResponse.getRole());
 
+                            // Save to SharedPreferences
+                            SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("jwt_token", loginResponse.getToken());
+                            editor.putLong("student_id", loginResponse.getStudentId());
+                            editor.putString("email", loginResponse.getEmail());
+                            editor.putString("role", loginResponse.getRole());
+                            editor.putString("full_name", loginResponse.getFullName());
+                            editor.apply();
+
+                            Toast.makeText(activity_login.this,
+                                    "Welcome, " + loginResponse.getFullName() + "!",
+                                    Toast.LENGTH_SHORT).show();
+
+                            // Navigate to homepage
                             Intent intent = new Intent(activity_login.this, activity_homepage.class);
                             startActivity(intent);
                             finish();
+
                         } else {
-                            shakeView(loginCard);
-                            Toast.makeText(activity_login.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                            // Login failed
+                            String errorMessage = "Invalid credentials";
+
+                            try {
+                                if (response.errorBody() != null) {
+                                    errorMessage = response.errorBody().string();
+                                }
+                            } catch (Exception e) {
+                                Log.e("Login", "Error parsing error body", e);
+                            }
+
+                            Log.e("Login", "❌ Login failed: " + response.code() + " - " + errorMessage);
+
+                            Toast.makeText(activity_login.this,
+                                    "Login failed: " + errorMessage,
+                                    Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
+                        // Re-enable button
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
-                        Toast.makeText(activity_login.this, "Connection failed", Toast.LENGTH_SHORT).show();
+
+                        Log.e("Login", "❌ Network error", t);
+
+                        Toast.makeText(activity_login.this,
+                                "❌ Connection failed!\n" +
+                                        "Error: " + t.getMessage() + "\n\n" +
+                                        "Troubleshooting:\n" +
+                                        "1. Check backend is running on port 8081\n" +
+                                        "2. Check URL: " + RetrofitClient.getBaseUrl() + "\n" +
+                                        "3. For real device, use computer's IP address",
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
