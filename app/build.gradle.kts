@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.skilllsetujava"
-        minSdk = 24
+        minSdk = 23
         targetSdk = 36
 
         versionCode = 1
@@ -80,5 +80,11 @@ dependencies {
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
+// Retrofit for API calls
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 
+    // Coroutines for async (already have kotlinx)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }

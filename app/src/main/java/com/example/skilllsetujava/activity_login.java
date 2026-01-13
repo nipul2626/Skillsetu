@@ -3,10 +3,13 @@ package com.example.skilllsetujava;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -15,6 +18,7 @@ import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -33,6 +37,11 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.example.skilllsetujava.api.RetrofitClient;
+import com.example.skilllsetujava.api.models.*;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class activity_login extends AppCompatActivity {
 
@@ -368,19 +377,25 @@ public class activity_login extends AppCompatActivity {
     }
 
     private void updateThemeColors() {
-        int primaryColor = ContextCompat.getColor(this,
+        int colorFrom = btnLogin.getBackgroundTintList().getDefaultColor();
+        int colorTo = ContextCompat.getColor(this,
                 isStudentSelected ? R.color.primary_purple : R.color.tpo_primary);
 
-        // Animate button color change
-        ValueAnimator colorAnimator = ValueAnimator.ofArgb(
-                btnLogin.getBackgroundTintList().getDefaultColor(),
-                primaryColor
-        );
+        // ✅ FIXED: API 17 Compatible color animation
+        ValueAnimator colorAnimator = ValueAnimator.ofFloat(0f, 1f);
         colorAnimator.setDuration(300);
+
+        // We use ArgbEvaluator to manually calculate the color between 'from' and 'to'
+        final ArgbEvaluator evaluator = new ArgbEvaluator();
+
         colorAnimator.addUpdateListener(animation -> {
-            int color = (int) animation.getAnimatedValue();
+            float fraction = animation.getAnimatedFraction();
+            int color = (int) evaluator.evaluate(fraction, colorFrom, colorTo);
+
             btnLogin.setBackgroundTintList(ColorStateList.valueOf(color));
-            cbRememberMe.setButtonTintList(ColorStateList.valueOf(color));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                cbRememberMe.setButtonTintList(ColorStateList.valueOf(color));
+            }
             tvForgotPassword.setTextColor(color);
             passwordInputLayout.setBoxStrokeColor(color);
 
@@ -457,61 +472,54 @@ public class activity_login extends AppCompatActivity {
     }
 
     private void handleLogin() {
-        String identifier = isStudentSelected ?
-                etEmail.getText().toString().trim() :
-                etUsername.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        // Validation
-        if (isStudentSelected) {
-            if (identifier.isEmpty()) {
-                emailInputLayout.setError("Email is required");
-                shakeView(emailInputLayout);
-                return;
-            }
-            if (!isValidEmail(identifier)) {
-                emailInputLayout.setError("Invalid email format");
-                shakeView(emailInputLayout);
-                return;
-            }
-        } else {
-            if (identifier.isEmpty()) {
-                usernameInputLayout.setError("Username is required");
-                shakeView(usernameInputLayout);
-                return;
-            }
-        }
-
-        if (password.isEmpty()) {
-            passwordInputLayout.setError("Password is required");
-            shakeView(passwordInputLayout);
-            return;
-        }
-        if (password.length() < 6) {
-            passwordInputLayout.setError("Password must be at least 6 characters");
-            shakeView(passwordInputLayout);
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Button press animation
-        btnLogin.animate()
-                .scaleX(0.95f)
-                .scaleY(0.95f)
-                .setDuration(100)
-                .withEndAction(() -> {
-                    btnLogin.animate()
-                            .scaleX(1f)
-                            .scaleY(1f)
-                            .setDuration(100)
-                            .start();
+        btnLogin.setEnabled(false);
+        btnLogin.setText("Logging in...");
 
-                    // Show success message
-                    String roleText = isStudentSelected ? "Student" : "TPO";
-                    Toast.makeText(this, "Logging in as " + roleText + "...", Toast.LENGTH_SHORT).show();
+        LoginRequest request = new LoginRequest(email, password);
 
-                    // TODO: Implement actual login logic here
-                })
-                .start();
+        RetrofitClient.getApiService()
+                .login(request)
+                .enqueue(new Callback<LoginResponse>() {
+                    @Override
+                    public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                        btnLogin.setEnabled(true);
+                        btnLogin.setText("Login");
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            LoginResponse loginResponse = response.body();
+
+                            // ✅ FIXED: Corrected SharedPreferences implementation
+                            SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
+                            prefs.edit()
+                                    .putString("jwt_token", loginResponse.getToken())
+                                    .putLong("student_id", loginResponse.getStudentId())
+                                    .putString("email", loginResponse.getEmail())
+                                    .apply();
+
+                            Intent intent = new Intent(activity_login.this, activity_homepage.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            shakeView(loginCard);
+                            Toast.makeText(activity_login.this, "Invalid credentials", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<LoginResponse> call, Throwable t) {
+                        btnLogin.setEnabled(true);
+                        btnLogin.setText("Login");
+                        Toast.makeText(activity_login.this, "Connection failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void shakeView(View view) {
