@@ -1,16 +1,13 @@
 package com.example.skilllsetujava;
 
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
-import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -27,8 +24,12 @@ import com.example.skilllsetujava.api.models.ImmediateAction;
 import com.example.skilllsetujava.api.models.InterviewResponse;
 import com.example.skilllsetujava.api.models.QuestionAnalysis;
 import com.example.skilllsetujava.api.models.Roadmap;
+import com.example.skilllsetujava.api.models.FocusArea;
+import com.example.skilllsetujava.api.models.WeeklyPlan;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class EvaluationActivity extends AppCompatActivity {
@@ -57,7 +58,6 @@ public class EvaluationActivity extends AppCompatActivity {
     private String interviewType;
     private String jobRole;
     private String totalTime;
-    private boolean isRetake;
 
     private Evaluation evaluation;
     private Roadmap roadmap;
@@ -70,7 +70,6 @@ public class EvaluationActivity extends AppCompatActivity {
         interviewType = getIntent().getStringExtra("interview_type");
         jobRole = getIntent().getStringExtra("job_role");
         totalTime = getIntent().getStringExtra("total_time");
-        isRetake = getIntent().getBooleanExtra("is_retake", false);
 
         InterviewResponse response =
                 (InterviewResponse) getIntent().getSerializableExtra("interview_response");
@@ -122,11 +121,22 @@ public class EvaluationActivity extends AppCompatActivity {
     private void setupListeners() {
         btnBack.setOnClickListener(v -> finish());
 
+        // ✅ FIXED ROADMAP NAVIGATION
         btnViewRoadmap.setOnClickListener(v -> {
+            if (roadmap == null) {
+                Toast.makeText(this, "❌ Roadmap data not available", Toast.LENGTH_SHORT).show();
+                Log.e("EvaluationActivity", "Roadmap is NULL!");
+                return;
+            }
+
+            // ✅ Convert DTO Roadmap to GroqAPIService.TrainingPlan format
+            GroqAPIService.TrainingPlan plan = convertRoadmapToTrainingPlan(roadmap);
+
             Intent intent = new Intent(this, RoadmapActivity.class);
-            intent.putExtra("roadmap", roadmap);
+            intent.putExtra("training_plan", plan);  // ✅ Use correct key
             intent.putExtra("job_role", jobRole);
             intent.putExtra("interview_type", interviewType);
+            intent.putExtra("overall_score", evaluation.getOverallScore());
             startActivity(intent);
         });
 
@@ -152,7 +162,6 @@ public class EvaluationActivity extends AppCompatActivity {
         new Handler(Looper.getMainLooper()).postDelayed(this::displayQuestionAnalysis, 1500);
         new Handler(Looper.getMainLooper()).postDelayed(this::displayCoachFeedback, 2500);
         new Handler(Looper.getMainLooper()).postDelayed(this::displayActionPlan, 3500);
-        new Handler(Looper.getMainLooper()).postDelayed(this::showButtons, 4500);
     }
 
     private void animateOverallScore() {
@@ -174,68 +183,114 @@ public class EvaluationActivity extends AppCompatActivity {
             tvOverallScore.setText(String.format(Locale.US, "%.1f", v / 10.0));
         });
         animator.start();
-
-        tvPerformanceLevel.setText(getPerformanceLevel(evaluation.getOverallScore()));
     }
 
     private void displayQuestionAnalysis() {
         if (evaluation.getQuestionAnalysis() == null || evaluation.getQuestionAnalysis().isEmpty()) {
             tvQuestionAnalysisTitle.setVisibility(View.GONE);
+            Log.e("EvaluationActivity", "❌ Question analysis is NULL or EMPTY!");
             return;
         }
+
+        Log.d("EvaluationActivity", "✅ Found " + evaluation.getQuestionAnalysis().size() + " question analyses");
 
         questionAnalysisContainer.removeAllViews();
 
         for (int i = 0; i < evaluation.getQuestionAnalysis().size(); i++) {
             QuestionAnalysis qa = evaluation.getQuestionAnalysis().get(i);
+
+            Log.d("EvaluationActivity", String.format(
+                    "Q%d: score=%.1f, answered='%s', good='%s'",
+                    qa.getQuestionNumber(),
+                    qa.getScore(),
+                    qa.getWhatYouAnswered() != null ? qa.getWhatYouAnswered().substring(0, Math.min(30, qa.getWhatYouAnswered().length())) : "NULL",
+                    qa.getWhatWasGood() != null ? qa.getWhatWasGood().substring(0, Math.min(30, qa.getWhatWasGood().length())) : "NULL"
+            ));
+
             CardView card = createQuestionCard(qa, i);
             questionAnalysisContainer.addView(card);
         }
     }
+    private int dpToPx(int dp) {
+        return Math.round(dp * getResources().getDisplayMetrics().density);
+    }
 
     private CardView createQuestionCard(QuestionAnalysis qa, int index) {
+
         CardView card = new CardView(this);
-        card.setRadius(dpToPx(18));
-        card.setCardElevation(dpToPx(4));
+        card.setRadius(dpToPx(20));
+        card.setCardElevation(dpToPx(6));
+        card.setUseCompatPadding(true);
+        card.setCardBackgroundColor(0xFF1C2233); // 🔥 Dark roadmap-like card
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(dpToPx(20), dpToPx(20), dpToPx(20), dpToPx(20));
 
-        TextView tvQ = new TextView(this);
-        tvQ.setText("Question " + qa.getQuestionNumber());
-        tvQ.setTextColor(0xFFFFFFFF);
-        tvQ.setTextSize(17);
-        layout.addView(tvQ);
+        // 🧠 Question header
+        TextView tvQuestion = new TextView(this);
+        tvQuestion.setText("Question " + qa.getQuestionNumber());
+        tvQuestion.setTextSize(16);
+        tvQuestion.setTextColor(0xFFFFFFFF);
+        tvQuestion.setTypeface(null, android.graphics.Typeface.BOLD);
+        layout.addView(tvQuestion);
 
-        TextView tvAns = new TextView(this);
-        tvAns.setText(qa.getWhatYouAnswered());
-        tvAns.setTextColor(0xCCFFFFFF);
-        layout.addView(tvAns);
+        // ⭐ Score
+        TextView tvScore = new TextView(this);
+        tvScore.setText("Score: " + qa.getScore());
+        tvScore.setTextColor(0xFF9AA4BF);
+        tvScore.setPadding(0, dpToPx(4), 0, dpToPx(12));
+        layout.addView(tvScore);
+
+        // 📝 Your Answer
+        if (qa.getWhatYouAnswered() != null && !qa.getWhatYouAnswered().isEmpty()) {
+            TextView tvAnswer = new TextView(this);
+            tvAnswer.setText("Your Answer:\n" + qa.getWhatYouAnswered());
+            tvAnswer.setTextColor(0xFFD6DBF5);
+            tvAnswer.setPadding(0, 0, 0, dpToPx(12));
+            layout.addView(tvAnswer);
+        }
+
+        // ✅ What was good
+        if (qa.getWhatWasGood() != null && !qa.getWhatWasGood().isEmpty()) {
+            TextView tvGood = new TextView(this);
+            tvGood.setText("✔ What was good:\n" + qa.getWhatWasGood());
+            tvGood.setTextColor(0xFF6EE7B7);
+            tvGood.setPadding(0, 0, 0, dpToPx(8));
+            layout.addView(tvGood);
+        }
+
+        // ⚠ What was missing
+        if (qa.getWhatWasMissing() != null && !qa.getWhatWasMissing().isEmpty()) {
+            TextView tvMissing = new TextView(this);
+            tvMissing.setText("⚠ What was missing:\n" + qa.getWhatWasMissing());
+            tvMissing.setTextColor(0xFFFCA5A5);
+            layout.addView(tvMissing);
+        }
 
         card.addView(layout);
 
+        // ✨ Smooth entry animation
         card.setAlpha(0f);
-        card.animate().alpha(1f).setStartDelay(index * 150).start();
+        card.setTranslationY(dpToPx(20));
+        card.animate()
+                .alpha(1f)
+                .translationY(0)
+                .setStartDelay(index * 120L)
+                .setDuration(300)
+                .start();
+
         return card;
     }
 
+
     private void displayCoachFeedback() {
-        if (evaluation.getCoachFeedback() == null) {
-            coachFeedbackCard.setVisibility(View.GONE);
-            return;
-        }
         tvCoachFeedback.setText(evaluation.getCoachFeedback());
-        coachFeedbackCard.setVisibility(View.VISIBLE);
     }
 
     private void displayActionPlan() {
-        if (evaluation.getImmediateActions() == null) {
-            actionPlanCard.setVisibility(View.GONE);
-            return;
-        }
+        if (evaluation.getImmediateActions() == null) return;
 
-        actionItemsContainer.removeAllViews();
         for (ImmediateAction action : evaluation.getImmediateActions()) {
             TextView tv = new TextView(this);
             tv.setText("• " + action.getAction());
@@ -244,22 +299,48 @@ public class EvaluationActivity extends AppCompatActivity {
         }
     }
 
-    private void showButtons() {
-        btnViewRoadmap.animate().alpha(1f).scaleX(1f).scaleY(1f)
-                .setInterpolator(new OvershootInterpolator()).start();
-        btnRetakeInterview.setVisibility(View.VISIBLE);
-        btnBackToHome.setVisibility(View.VISIBLE);
-    }
+    // ================= CONVERSION LOGIC =================
 
-    private String getPerformanceLevel(double score) {
-        if (score >= 9) return "🌟 Outstanding";
-        if (score >= 8) return "🎯 Excellent";
-        if (score >= 7) return "✅ Good";
-        if (score >= 6) return "📈 Average";
-        return "⚠ Needs Work";
-    }
+    private GroqAPIService.TrainingPlan convertRoadmapToTrainingPlan(Roadmap roadmap) {
 
-    private int dpToPx(int dp) {
-        return (int) (dp * getResources().getDisplayMetrics().density);
+        GroqAPIService.TrainingPlan plan = new GroqAPIService.TrainingPlan();
+
+        plan.readinessScore = roadmap.getReadinessScore();
+        plan.targetScore = roadmap.getTargetScore();
+        plan.timeToTarget = roadmap.getTimeToTarget();
+
+        plan.focusAreas = new ArrayList<>();
+        if (roadmap.getFocusAreas() != null) {
+            for (FocusArea fa : roadmap.getFocusAreas()) {
+                GroqAPIService.FocusArea gfa = new GroqAPIService.FocusArea();
+                gfa.area = fa.getArea();
+                gfa.priority = fa.getPriority();
+                gfa.currentLevel = fa.getCurrentLevel();
+                gfa.targetLevel = fa.getTargetLevel();
+                gfa.estimatedHours = fa.getEstimatedHours();
+                gfa.keyTopics = fa.getKeyTopics();
+                gfa.resources = new ArrayList<>();
+                plan.focusAreas.add(gfa);
+            }
+        }
+
+        plan.weeklyPlan = new ArrayList<>();
+        if (roadmap.getWeeklyPlan() != null) {
+            for (WeeklyPlan wp : roadmap.getWeeklyPlan()) {
+                GroqAPIService.WeeklyPlan gwp = new GroqAPIService.WeeklyPlan();
+                gwp.week = wp.getWeek();
+                gwp.theme = wp.getTheme();
+                gwp.studyTime = wp.getStudyTime();
+                gwp.practiceTime = wp.getPracticeTime();
+                gwp.topics = wp.getTopics();
+                gwp.projects = wp.getProjects();
+                gwp.weekendTask = wp.getWeekendTask();
+                gwp.practiceProblems = new ArrayList<>();
+                plan.weeklyPlan.add(gwp);
+            }
+        }
+
+        plan.milestones = new ArrayList<>();
+        return plan;
     }
 }
