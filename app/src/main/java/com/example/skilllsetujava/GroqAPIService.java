@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
  */
 public class GroqAPIService {
     private static final String TAG = "GroqAPI";
-    private static final String GROQ_API_KEY = "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";
+    private static final String GROQ_API_KEY = "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";
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String MODEL = "llama-3.1-8b-instant";
     private static final int MAX_RETRIES = 2;
@@ -265,146 +265,171 @@ public class GroqAPIService {
                                                     List<QAPair> qaHistory) {
         StringBuilder prompt = new StringBuilder();
 
-        // Pre-validate answers and detect patterns
+        // Pre-validate answers
         Map<String, Integer> answerSimilarity = detectAnswerSimilarity(qaHistory);
         int lowQualityCount = countLowQualityAnswers(qaHistory);
 
         prompt.append(String.format(
-                "You are Dr. Priya Sharma, a Senior Technical Interview Coach at Google.\n\n" +
+                "You are an experienced technical interviewer conducting a %s interview for a %s position.\n\n" +
 
                         "CONTEXT:\n" +
-                        "You just conducted a %s interview for a %s position.\n" +
-                        "âš ï¸ PRE-ANALYSIS DETECTED:\n" +
-                        "- %d answers appear to be low quality or repeated\n" +
-                        "- Answer similarity detected: %s\n\n" +
+                        "This is a campus placement interview for a college student.\n" +
+                        "- Pre-analysis: %d low-quality answers detected\n" +
+                        "- Answer patterns: %s\n\n" +
 
                         "YOUR TASK:\n" +
-                        "Evaluate with MAXIMUM STRICTNESS. This is a real job interview, not a practice test.\n\n" +
+                        "Evaluate with FAIRNESS and ENCOURAGEMENT while maintaining professional standards.\n\n" +
 
-                        "===== ULTRA-STRICT SCORING RULES =====\n\n" +
+                        "===== BALANCED SCORING GUIDELINES =====\n\n" +
 
-                        "AUTOMATIC SCORE REDUCTIONS:\n" +
-                        "â€¢ Same/similar answer repeated = 0 for ALL repeated instances\n" +
-                        "â€¢ Gibberish (asdf, qwerty, random text) = 0\n" +
-                        "â€¢ Copy-pasted question = 0\n" +
-                        "â€¢ Vague answer (<30 words) = Maximum 3.0\n" +
-                        "â€¢ Generic answer (no specifics) = Maximum 5.0\n" +
-                        "â€¢ Missing key concepts = -2.0 penalty\n" +
-                        "â€¢ No examples when needed = -1.0 penalty\n\n" +
+                        "SCORING PHILOSOPHY:\n" +
+                        "• This is a LEARNING interview, not a rejection interview\n" +
+                        "• Focus on GROWTH POTENTIAL, not just current knowledge\n" +
+                        "• Reward EFFORT and REASONING, even if incomplete\n" +
+                        "• Give CREDIT for attempting difficult questions\n\n" +
 
                         "SCORING SCALE (0-10 per question):\n" +
-                        "â€¢ 9-10: EXCEPTIONAL - Covers everything + edge cases + real examples + best practices\n" +
-                        "â€¢ 7-8: STRONG - Solid understanding with minor gaps\n" +
-                        "â€¢ 5-6: ADEQUATE - Basic knowledge, lacks depth or examples\n" +
-                        "â€¢ 3-4: WEAK - Significant gaps, surface-level only\n" +
-                        "â€¢ 0-2: UNACCEPTABLE - Wrong/copied/gibberish/repeated\n\n" +
+                        "• 9-10: EXCELLENT - Comprehensive answer with examples, edge cases, best practices\n" +
+                        "• 7-8: GOOD - Solid understanding, minor gaps or missing examples\n" +
+                        "• 5-6: FAIR - Basic understanding shown, needs more depth\n" +
+                        "• 3-4: BASIC - Attempted answer, shows some awareness\n" +
+                        "• 1-2: WEAK - Very limited understanding or mostly incorrect\n" +
+                        "• 0: INVALID - Gibberish, copied question, or no attempt\n\n" +
+
+                        "AUTOMATIC PENALTIES (but not death sentences):\n" +
+                        "• Gibberish/random text = 0\n" +
+                        "• Copied question exactly = 0\n" +
+                        "• Repeated identical answer = 0 for duplicate\n" +
+                        "• Very short answer (<30 words) = Maximum 4.0 (but can still be 3-4)\n" +
+                        "• Generic answer without specifics = Maximum 6.0\n" +
+                        "• Missing key concepts = -1.5 (not -2.0)\n\n" +
+
+                        "CREDIT WHERE CREDIT IS DUE:\n" +
+                        "• Used correct terminology = +0.5\n" +
+                        "• Showed logical thinking = +0.5\n" +
+                        "• Attempted to explain = +0.5\n" +
+                        "• Mentioned trade-offs or alternatives = +1.0\n" +
+                        "• Provided real-world example = +1.0\n\n" +
 
                         "OVERALL SCORE CALCULATION:\n" +
-                        "â€¢ If >3 questions scored 0-4: Overall CANNOT exceed 5.0\n" +
-                        "â€¢ If >5 questions scored 0-4: Overall CANNOT exceed 3.0\n" +
-                        "â€¢ If answer repetition detected: Reduce overall by 2.0\n" +
-                        "â€¢ If mostly generic answers: Reduce overall by 1.5\n\n" +
+                        "• Average all question scores (don't artificially cap)\n" +
+                        "• If >6 questions scored 5+, overall should be 5-7 range\n" +
+                        "• If >8 questions scored 6+, overall should be 6-8 range\n" +
+                        "• Don't penalize twice (question penalty + overall penalty)\n" +
+                        "• Remember: 5.0-6.0 is PASSING, not failing\n\n" +
 
                         "===== INTERVIEW TRANSCRIPT =====\n",
 
                 interviewType, jobRole, lowQualityCount, answerSimilarity.toString()
         ));
 
-        // Add Q&A pairs with strict flags
+        // Add Q&A pairs with balanced flagging
         for (int i = 0; i < qaHistory.size(); i++) {
             QAPair qa = qaHistory.get(i);
 
-            boolean isValid = isAnswerValid(qa.answer);
-            boolean isCopied = isCopiedQuestion(qa.question, qa.answer);
             boolean isGibberish = isGibberishAnswer(qa.answer);
+            boolean isCopied = isCopiedQuestion(qa.question, qa.answer);
             boolean isRepeated = isAnswerRepeated(qa.answer, qaHistory, i);
-            boolean isVague = qa.answer.split("\\s+").length < 30;
+            boolean isShort = qa.answer.split("\\s+").length < 30;
+            boolean hasEffort = qa.answer.split("\\s+").length > 20;
 
             prompt.append(String.format("\n--- QUESTION %d ---\n", i + 1));
             prompt.append("Q: ").append(qa.question).append("\n");
 
             if (isGibberish) {
                 prompt.append(String.format("A: [GIBBERISH] '%s'\n", truncateAnswer(qa.answer, 100)));
-                prompt.append("ðŸš« FLAG: Random text entered - AUTOMATIC 0\n");
+                prompt.append("🚫 FLAG: Random text - Score 0\n");
             } else if (isCopied) {
-                prompt.append(String.format("A: [COPIED QUESTION] '%s'\n", truncateAnswer(qa.answer, 150)));
-                prompt.append("ðŸš« FLAG: Question copied, not answered - AUTOMATIC 0\n");
+                prompt.append(String.format("A: [COPIED] '%s'\n", truncateAnswer(qa.answer, 150)));
+                prompt.append("🚫 FLAG: Question copied - Score 0\n");
             } else if (isRepeated) {
-                prompt.append(String.format("A: [REPEATED ANSWER] '%s'\n", truncateAnswer(qa.answer, 200)));
-                prompt.append("ðŸš« FLAG: Same answer as previous question - AUTOMATIC 0\n");
-            } else if (!isValid) {
-                prompt.append(String.format("A: [INVALID] '%s'\n", truncateAnswer(qa.answer, 100)));
-                prompt.append("âš ï¸ FLAG: Low quality - Maximum score 3.0\n");
-            } else if (isVague) {
-                prompt.append("A: ").append(truncateAnswer(qa.answer, 500)).append("\n");
-                prompt.append("âš ï¸ FLAG: Too short (<30 words) - Maximum score 3.0\n");
+                prompt.append(String.format("A: [REPEATED] '%s'\n", truncateAnswer(qa.answer, 200)));
+                prompt.append("🚫 FLAG: Duplicate answer - Score 0\n");
+            } else if (isShort && !hasEffort) {
+                prompt.append("A: ").append(truncateAnswer(qa.answer, 300)).append("\n");
+                prompt.append("⚠️ FLAG: Very short - Maximum 4.0 (but give 3-4 if shows understanding)\n");
             } else {
                 prompt.append("A: ").append(truncateAnswer(qa.answer, 500)).append("\n");
+                if (hasEffort) {
+                    prompt.append("✅ POSITIVE: Decent length, student made effort\n");
+                }
             }
         }
 
         prompt.append("\n\n===== REQUIRED JSON OUTPUT =====\n\n");
         prompt.append(
-                "You MUST return EXACTLY this JSON structure (NO EXCEPTIONS):\n\n" +
+                "Return this EXACT structure:\n\n" +
                         "{\n" +
                         "  \"evaluation\": {\n" +
-                        "    \"overallScore\": 4.2,\n" +
+                        "    \"overallScore\": 6.8,\n" +
                         "    \"scoreBreakdown\": {\n" +
-                        "      \"technicalKnowledge\": 4.5,\n" +
-                        "      \"problemSolving\": 3.8,\n" +
-                        "      \"communication\": 4.9,\n" +
-                        "      \"depthOfUnderstanding\": 3.5\n" +
+                        "      \"technicalKnowledge\": 6.5,\n" +
+                        "      \"problemSolving\": 6.8,\n" +
+                        "      \"communication\": 7.2,\n" +
+                        "      \"depthOfUnderstanding\": 6.3\n" +
                         "    },\n" +
                         "    \"questionAnalysis\": [\n" +
                         "      {\n" +
                         "        \"questionNumber\": 1,\n" +
-                        "        \"score\": 8.5,\n" +
-                        "        \"whatYouAnswered\": \"1 sentence summary of their actual answer\",\n" +
-                        "        \"whatWasGood\": \"Specific strengths (or 'Nothing - answer was invalid/copied/repeated')\",\n" +
-                        "        \"whatWasMissing\": \"Specific gaps (or 'Everything - no valid answer provided')\",\n" +
-                        "        \"idealAnswer\": \"2-3 specific points a 10/10 answer must include\"\n" +
+                        "        \"score\": 7.5,\n" +
+                        "        \"whatYouAnswered\": \"Brief summary\",\n" +
+                        "        \"whatWasGood\": \"Specific strengths OR 'Student attempted but answer incomplete'\",\n" +
+                        "        \"whatWasMissing\": \"Specific gaps OR 'Could add more technical depth'\",\n" +
+                        "        \"idealAnswer\": \"2-3 key points for perfect answer\"\n" +
                         "      }\n" +
-                        "      ... INCLUDE ALL 10 QUESTIONS - THIS IS MANDATORY\n" +
+                        "      ... ALL 10 QUESTIONS MANDATORY\n" +
                         "    ],\n" +
-                        "    \"coachFeedback\": \"2-3 sentences ONLY. High-level summary: Overall performance + main weakness + one action item.\",\n" +
+                        "    \"coachFeedback\": \"Positive start + main strength + key improvement area + encouragement (3-4 sentences)\",\n" +
                         "    \"topStrengths\": [\n" +
-                        "      \"Specific strength with question reference: 'Good explanation of X in Q3'\"\n" +
+                        "      \"Specific strength: 'Good explanation of X in Q3'\",\n" +
+                        "      \"Another strength: 'Clear communication in Q5'\",\n" +
+                        "      \"Third strength: 'Logical approach in Q7'\"\n" +
                         "    ],\n" +
                         "    \"criticalGaps\": [\n" +
-                        "      \"Specific gap: 'Missed Y concept in Q5 - critical for production'\"\n" +
+                        "      \"Gap 1: 'Need deeper understanding of X (Q2, Q4)'\",\n" +
+                        "      \"Gap 2: 'Practice explaining Y with examples (Q6)'\"\n" +
                         "    ]\n" +
                         "  },\n" +
                         "  \"actionPlan\": {\n" +
                         "    \"immediateActions\": [\n" +
                         "      {\n" +
                         "        \"priority\": \"HIGH\",\n" +
-                        "        \"action\": \"Study [specific topic] - you scored 0-3 on Q[X]\",\n" +
-                        "        \"why\": \"This is fundamental for [job role]\",\n" +
-                        "        \"resources\": [\"Specific URL or 'Search: [exact keyword]'\"]\n" +
+                        "        \"action\": \"Study [specific topic from weak questions]\",\n" +
+                        "        \"why\": \"This appeared in Q[X] and Q[Y] - foundational concept\",\n" +
+                        "        \"resources\": [\"https://specific-url.com OR 'Search: keyword'\"]\n" +
+                        "      },\n" +
+                        "      {\n" +
+                        "        \"priority\": \"MEDIUM\",\n" +
+                        "        \"action\": \"Practice [skill that needs work]\",\n" +
+                        "        \"why\": \"Will help you explain concepts better\",\n" +
+                        "        \"resources\": [\"Resource link\"]\n" +
                         "      }\n" +
                         "    ],\n" +
                         "    \"weeklyGoals\": [\n" +
-                        "      \"Week 1: Specific measurable goal\"\n" +
+                        "      \"Week 1: Master fundamentals from weak areas\",\n" +
+                        "      \"Week 2: Build 1-2 small projects\",\n" +
+                        "      \"Week 3: Practice explaining concepts\",\n" +
+                        "      \"Week 4: Mock interviews\"\n" +
                         "    ]\n" +
                         "  },\n" +
                         "  \"trainingPlan\": {\n" +
-                        "    \"readinessScore\": 45,\n" +
-                        "    \"targetScore\": 75,\n" +
-                        "    \"timeToTarget\": \"6 weeks with 3hrs/day\",\n" +
+                        "    \"readinessScore\": 65,\n" +
+                        "    \"targetScore\": 85,\n" +
+                        "    \"timeToTarget\": \"4-6 weeks with 2 hours/day\",\n" +
                         "    \"focusAreas\": [\n" +
                         "      {\n" +
-                        "        \"area\": \"Specific technical area\",\n" +
+                        "        \"area\": \"[Specific weak topic]\",\n" +
                         "        \"priority\": \"High\",\n" +
-                        "        \"currentLevel\": 4,\n" +
+                        "        \"currentLevel\": 5,\n" +
                         "        \"targetLevel\": 8,\n" +
-                        "        \"estimatedHours\": 25,\n" +
+                        "        \"estimatedHours\": 20,\n" +
                         "        \"keyTopics\": [\"Topic 1\", \"Topic 2\", \"Topic 3\"],\n" +
                         "        \"resources\": [\n" +
                         "          {\n" +
                         "            \"type\": \"Documentation\",\n" +
-                        "            \"title\": \"Actual resource name\",\n" +
-                        "            \"link\": \"Real URL or 'Search: keyword'\",\n" +
-                        "            \"duration\": \"X hours\"\n" +
+                        "            \"title\": \"Resource name\",\n" +
+                        "            \"link\": \"URL or 'Search: keyword'\",\n" +
+                        "            \"duration\": \"5 hours\"\n" +
                         "          }\n" +
                         "        ]\n" +
                         "      }\n" +
@@ -412,57 +437,70 @@ public class GroqAPIService {
                         "    \"weeklyPlan\": [\n" +
                         "      {\n" +
                         "        \"week\": 1,\n" +
-                        "        \"theme\": \"Week 1 focus\",\n" +
+                        "        \"theme\": \"Fundamentals\",\n" +
                         "        \"studyTime\": \"90 min/day\",\n" +
                         "        \"practiceTime\": \"30 min/day\",\n" +
-                        "        \"topics\": [\"Specific topic 1\", \"Specific topic 2\"],\n" +
+                        "        \"topics\": [\"Topic 1\", \"Topic 2\"],\n" +
                         "        \"practiceProblems\": [\n" +
                         "          {\n" +
-                        "            \"problem\": \"Specific coding/design problem\",\n" +
+                        "            \"problem\": \"Specific problem\",\n" +
                         "            \"difficulty\": \"Easy\",\n" +
-                        "            \"focusArea\": \"What this practices\"\n" +
+                        "            \"focusArea\": \"What it practices\"\n" +
                         "          }\n" +
                         "        ],\n" +
-                        "        \"projects\": [\"Specific project with deliverable\"],\n" +
-                        "        \"weekendTask\": \"Specific weekend task\"\n" +
+                        "        \"projects\": [\"Specific project\"],\n" +
+                        "        \"weekendTask\": \"Weekend challenge\"\n" +
                         "      }\n" +
-                        "      ... INCLUDE ALL 4 WEEKS - THIS IS MANDATORY\n" +
+                        "      ... ALL 4 WEEKS MANDATORY\n" +
                         "    ],\n" +
                         "    \"milestones\": [\n" +
                         "      {\n" +
                         "        \"week\": 1,\n" +
-                        "        \"milestone\": \"Specific achievement\",\n" +
-                        "        \"verification\": \"How to verify completion\"\n" +
+                        "        \"milestone\": \"Complete fundamentals\",\n" +
+                        "        \"verification\": \"Pass quiz with 80%+\"\n" +
                         "      }\n" +
-                        "      ... INCLUDE 4 MILESTONES (one per week)\n" +
+                        "      ... 4 MILESTONES TOTAL\n" +
                         "    ]\n" +
                         "  }\n" +
                         "}\n\n" +
 
                         "===== CRITICAL INSTRUCTIONS =====\n\n" +
-                        "1. BE BRUTALLY HONEST:\n" +
-                        "   â€¢ If 5+ answers were poor, overall score MUST be 2.0-4.0\n" +
-                        "   â€¢ If answers are repeated/similar, reduce score by 2.0\n" +
-                        "   â€¢ No grade inflation - this hurts the student\n\n" +
 
-                        "2. QUESTION ANALYSIS (MANDATORY FOR ALL 10):\n" +
-                        "   â€¢ You MUST provide analysis for ALL 10 questions\n" +
-                        "   â€¢ For invalid answers: whatWasGood = 'Nothing - answer invalid'\n" +
-                        "   â€¢ For repeated answers: score = 0, flag explicitly\n" +
-                        "   â€¢ Always provide idealAnswer with 2-3 specific points\n\n" +
+                        "1. BE FAIR AND ENCOURAGING:\n" +
+                        "   • Students are learning - reward effort\n" +
+                        "   • 5-7 range is NORMAL for campus interviews\n" +
+                        "   • Only go below 4.0 for truly invalid answers\n" +
+                        "   • Focus on POTENTIAL, not perfection\n\n" +
 
-                        "3. COACH FEEDBACK (2-3 SENTENCES MAX):\n" +
-                        "   â€¢ Sentence 1: Overall impression + score justification\n" +
-                        "   â€¢ Sentence 2: Main weakness/pattern observed\n" +
-                        "   â€¢ Sentence 3: One immediate action to improve\n\n" +
+                        "2. COACH FEEDBACK (3-4 sentences):\n" +
+                        "   • Start positive: 'Good effort on...'\n" +
+                        "   • Acknowledge strengths: 'You demonstrated...'\n" +
+                        "   • Identify growth area: 'Focus on improving...'\n" +
+                        "   • End encouraging: 'With practice, you'll...'\n\n" +
 
-                        "4. TRAINING PLAN (4 WEEKS MANDATORY):\n" +
-                        "   â€¢ Include all 4 weeks in weeklyPlan array\n" +
-                        "   â€¢ Each week needs topics, practiceProblems, projects, weekendTask\n" +
-                        "   â€¢ Resources must have real URLs or 'Search: keyword'\n" +
-                        "   â€¢ Milestones for all 4 weeks\n\n" +
+                        "3. TOP STRENGTHS (3 required):\n" +
+                        "   • Find 3 genuine strengths from their answers\n" +
+                        "   • Be specific: 'Good explanation of OOP in Q5'\n" +
+                        "   • Even weak interviews have SOME strengths\n\n" +
 
-                        "Return ONLY valid JSON. No markdown. No explanations."
+                        "4. CRITICAL GAPS (2-3 max):\n" +
+                        "   • Don't list everything wrong\n" +
+                        "   • Focus on 2-3 most important improvements\n" +
+                        "   • Frame positively: 'Opportunity to learn X'\n\n" +
+
+                        "5. QUESTION ANALYSIS (ALL 10 MANDATORY):\n" +
+                        "   • For valid answers: Find what was good\n" +
+                        "   • For weak answers: 'Student attempted, needs more depth'\n" +
+                        "   • For invalid: 'No valid answer provided'\n" +
+                        "   • Always provide constructive idealAnswer\n\n" +
+
+                        "6. TRAINING PLAN:\n" +
+                        "   • Readiness score: 50-75 range for most students\n" +
+                        "   • Target: +15 to +25 points is realistic\n" +
+                        "   • Time: 4-6 weeks realistic for college students\n" +
+                        "   • Include ALL 4 weeks with actionable content\n\n" +
+
+                        "Return ONLY valid JSON. Be the mentor they need."
         );
 
         return prompt.toString();

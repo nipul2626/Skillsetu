@@ -35,7 +35,7 @@ public class AIInterviewService {
     private static final String TAG = "AIInterviewService";
 
     // ⚠️ REPLACE WITH YOUR API KEY
-    private static final String API_KEY = "AIzaSyD7KK84M0q-7XFPpJAkVZNc2jMyFbErCV4";
+    private static final String API_KEY = "AIzaSyBI9rnNdqHdXhFSrgCcdhlSo-tC1QAm230";
 
     private GenerativeModelFutures model;
     private Executor executor;

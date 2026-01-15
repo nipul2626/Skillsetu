@@ -513,10 +513,11 @@ public class InterviewActivity extends AppCompatActivity {
         StringBuilder feedback = new StringBuilder();
 
         if (isCorrect) {
-            feedback.append("? Correct!\n\n");
+            feedback.append("✅ Correct!\n\n");
             feedback.append(question.correctExplanation);
+            feedback.append("\n\n💡 Now explain: Why is this the best approach? What are the trade-offs?");
         } else {
-            feedback.append("? Incorrect\n\n");
+            feedback.append("❌ Incorrect\n\n");
             feedback.append("Correct Answer:\n");
             feedback.append(
                             (char) ('A' + question.correctIndex))
@@ -534,30 +535,39 @@ public class InterviewActivity extends AppCompatActivity {
             feedback.append(
                     question.wrongExplanations.get(wrongExplanationIndex)
             );
+
+            feedback.append("\n\n💡 Now explain: What did you learn? How would you approach this differently?");
         }
 
         tvFollowUpQuestion.setText(feedback.toString());
         followUpSection.setVisibility(View.VISIBLE);
 
-        // ? HIDE the EditText for MCQ proper
-        etFollowUpAnswer.setVisibility(View.GONE);
+        // ✅ FIX: SHOW the EditText for MCQ proper (was hidden before)
+        etFollowUpAnswer.setVisibility(View.VISIBLE);
+        etFollowUpAnswer.setText(""); // Clear any previous text
+        etFollowUpAnswer.setHint("Explain what you learned from this question...");
 
         followUpSection.setAlpha(0f);
         followUpSection.animate().alpha(1f).setDuration(400).start();
 
-        // ? No follow-up for mcq_proper
-        currentFollowUp = feedback.toString();
-        currentStage = AnswerStage.COMPLETE;
+        // ✅ Store the feedback as follow-up question
+        currentFollowUp = isCorrect ?
+                "Explain why this is the best approach and what are the trade-offs?" :
+                "What did you learn from this mistake? How would you approach it differently?";
 
-        storeCurrentAnswer();
+        currentStage = AnswerStage.FOLLOW_UP;
 
-        btnSubmitAnswer.setText("Continue to Next Question ?");
-        btnSubmitAnswer.setEnabled(true);
-        btnSubmitAnswer.setAlpha(1f);
+        // ✅ Button state - WAIT for user to type
+        btnSubmitAnswer.setText("Submit Explanation");
+        btnSubmitAnswer.setEnabled(false);
+        btnSubmitAnswer.setAlpha(0.6f);
+
+        // ✅ Focus on input field
+        etFollowUpAnswer.requestFocus();
 
         Toast.makeText(
                 this,
-                "? Explanation shown (no AI used)",
+                "✅ Explanation shown - Now answer the follow-up",
                 Toast.LENGTH_SHORT
         ).show();
     }
@@ -1044,8 +1054,8 @@ public class InterviewActivity extends AppCompatActivity {
 
                             // Navigate to evaluation screen
                             Intent intent = new Intent(InterviewActivity.this, EvaluationActivity.class);
-                            intent.putExtra("interview_id", result.getInterviewId());
-                            intent.putExtra("overall_score", result.getOverallScore());
+                            intent.putExtra("interview_response", result);
+
                             intent.putExtra("interview_type", interviewType);
                             intent.putExtra("job_role", jobRole);
                             intent.putExtra("total_time", tvTimer.getText().toString());
