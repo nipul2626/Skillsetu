@@ -14,12 +14,17 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true"
-        >
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ProfileActivity"
+            android:exported="false"
             android:theme="@style/AppTheme"
-            android:exported="false" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".RoadmapActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -54,7 +59,7 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:theme="@style/AppTheme"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

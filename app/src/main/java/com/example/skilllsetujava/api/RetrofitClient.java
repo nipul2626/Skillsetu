@@ -20,7 +20,7 @@ public class RetrofitClient {
     // TO FIND YOUR COMPUTER IP:
     // Windows: Open CMD, type 'ipconfig', look for IPv4 Address
 
-    private static final String BASE_URL = "http://10.41.180.186:8081/";
+    private static final String BASE_URL = "http://192.168.31.8:8081/";
 
     // Example (REPLACE WITH YOUR ACTUAL IP):
     // private static final String BASE_URL = "http://192.168.89.100:8081/";
