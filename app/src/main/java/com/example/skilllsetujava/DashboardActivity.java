@@ -25,6 +25,14 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import com.example.skilllsetujava.api.RetrofitClient;
+import com.example.skilllsetujava.api.models.DashboardResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+
+
 /**
  * 📊 STUDENT PERFORMANCE DASHBOARD
  *
@@ -141,14 +149,34 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void loadUserData() {
         SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
-        studentName = prefs.getString("student_name", "Student");
+        Long studentId = prefs.getLong("student_id", 0);
+        String token = "Bearer " + prefs.getString("jwt_token", "");
 
-        // TODO: Load actual data from backend
-        // For now using sample data
+        RetrofitClient.getApiService()
+                .getStudentDashboard(token, studentId)
+                .enqueue(new Callback<DashboardResponse>() {
+                    @Override
+                    public void onResponse(Call<DashboardResponse> call, Response<DashboardResponse> res) {
+                        if (!res.isSuccessful() || res.body() == null) return;
 
-        tvStudentName.setText(studentName);
-        updateWelcomeMessage();
+                        DashboardResponse d = res.body();
+
+                        tvStudentName.setText(d.studentName);
+                        readinessScore = d.readinessScore;
+                        totalInterviews = d.totalInterviews;
+                        avgScore = d.averageScore;
+
+                        populateDashboard();
+                    }
+
+                    @Override
+                    public void onFailure(Call<DashboardResponse> call, Throwable t) {
+                        Toast.makeText(DashboardActivity.this,
+                                "Failed to load dashboard", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
+
 
     private void updateWelcomeMessage() {
         int hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY);

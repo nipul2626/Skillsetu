@@ -537,11 +537,10 @@ public class activity_homepage extends AppCompatActivity {
     }
 
     private void openDashboard() {
-        // TODO: Navigate to Dashboard Activity
-         Intent intent = new Intent(this, DashboardActivity.class);
-         intent.putExtra("readiness", placementReadiness);
-         startActivity(intent);
+        Intent intent = new Intent(this, DashboardActivity.class);
+        startActivity(intent);
     }
+
 
     // ==================== ANIMATIONS ====================
 
