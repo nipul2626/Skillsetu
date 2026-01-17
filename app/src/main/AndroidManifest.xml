@@ -17,6 +17,7 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".TPODashboardActivity"
+            android:theme="@style/AppTheme"
             android:exported="false" />
         <activity
             android:name=".DashboardActivity"

@@ -526,14 +526,32 @@ public class activity_login extends AppCompatActivity {
      * Call this method when login button is clicked
      */
     private void handleLogin() {
-        String email = etEmail.getText().toString().trim();
+
         String password = etPassword.getText().toString().trim();
 
-        // Validation
-        if (email.isEmpty()) {
-            etEmail.setError("Email is required");
-            etEmail.requestFocus();
-            return;
+        String identifier;   // email for student, username/email for TPO
+        String role;         // STUDENT or TPO
+
+        // 🧠 Decide based on checkbox / toggle
+        if (isStudentSelected) {
+            identifier = etEmail.getText().toString().trim();
+            role = "STUDENT";
+
+            if (identifier.isEmpty()) {
+                etEmail.setError("Email is required");
+                etEmail.requestFocus();
+                return;
+            }
+
+        } else {
+            identifier = etUsername.getText().toString().trim();
+            role = "TPO";
+
+            if (identifier.isEmpty()) {
+                etUsername.setError("Username is required");
+                etUsername.requestFocus();
+                return;
+            }
         }
 
         if (password.isEmpty()) {
@@ -542,92 +560,92 @@ public class activity_login extends AppCompatActivity {
             return;
         }
 
-        // Disable button and show loading
+        // Disable button
         btnLogin.setEnabled(false);
         btnLogin.setText("Logging in...");
 
-        Log.d("Login", "Attempting login for: " + email);
+        Log.d("Login", "Attempting login as " + role + " : " + identifier);
 
-        // Create request
-        LoginRequest request = new LoginRequest(email, password);
+        // ✅ CORRECT request
+        LoginRequest request = new LoginRequest(identifier, password, role);
 
-        // Make API call
         RetrofitClient.getApiService()
                 .login(request)
                 .enqueue(new Callback<LoginResponse>() {
+
                     @Override
-                    public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                        // Re-enable button
+                    public void onResponse(Call<LoginResponse> call,
+                                           Response<LoginResponse> response) {
+
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
 
                         if (response.isSuccessful() && response.body() != null) {
+
                             LoginResponse loginResponse = response.body();
 
                             Log.d("Login", "✅ Login successful!");
-                            Log.d("Login", "Token: " + loginResponse.getToken());
-                            Log.d("Login", "Student ID: " + loginResponse.getStudentId());
-                            Log.d("Login", "Email: " + loginResponse.getEmail());
                             Log.d("Login", "Role: " + loginResponse.getRole());
 
-                            // Save to SharedPreferences
-                            SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("jwt_token", loginResponse.getToken());
-                            editor.putLong("student_id", loginResponse.getStudentId());
-                            editor.putString("email", loginResponse.getEmail());
-                            editor.putString("role", loginResponse.getRole());
-                            editor.putString("full_name", loginResponse.getFullName());
-                            editor.apply();
+                            // Save auth data
+                            SharedPreferences prefs =
+                                    getSharedPreferences("auth", MODE_PRIVATE);
+
+                            prefs.edit()
+                                    .putString("token", loginResponse.getToken())
+                                    .putString("role", loginResponse.getRole())
+                                    .putLong("student_id",
+                                            loginResponse.getStudentId() != null
+                                                    ? loginResponse.getStudentId()
+                                                    : -1)
+                                    .putLong("college_id",
+                                            loginResponse.getCollegeId() != null
+                                                    ? loginResponse.getCollegeId()
+                                                    : -1)
+                                    .putString("full_name", loginResponse.getFullName())
+                                    .apply();
 
                             Toast.makeText(activity_login.this,
-                                    "Welcome, " + loginResponse.getFullName() + "!",
+                                    "Welcome, " + loginResponse.getFullName(),
                                     Toast.LENGTH_SHORT).show();
 
-                            // Navigate to homepage
-                            Intent intent = new Intent(activity_login.this, activity_homepage.class);
-                            startActivity(intent);
+                            // 🚀 ROLE BASED NAVIGATION
+                            if ("TPO".equalsIgnoreCase(loginResponse.getRole())) {
+                                startActivity(new Intent(
+                                        activity_login.this,
+                                        TPODashboardActivity.class
+                                ));
+                            } else {
+                                startActivity(new Intent(
+                                        activity_login.this,
+                                        activity_homepage.class
+                                ));
+                            }
+
                             finish();
 
                         } else {
-                            // Login failed
-                            String errorMessage = "Invalid credentials";
-
-                            try {
-                                if (response.errorBody() != null) {
-                                    errorMessage = response.errorBody().string();
-                                }
-                            } catch (Exception e) {
-                                Log.e("Login", "Error parsing error body", e);
-                            }
-
-                            Log.e("Login", "❌ Login failed: " + response.code() + " - " + errorMessage);
-
                             Toast.makeText(activity_login.this,
-                                    "Login failed: " + errorMessage,
+                                    "Invalid credentials",
                                     Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
-                        // Re-enable button
+
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
 
                         Log.e("Login", "❌ Network error", t);
 
                         Toast.makeText(activity_login.this,
-                                "❌ Connection failed!\n" +
-                                        "Error: " + t.getMessage() + "\n\n" +
-                                        "Troubleshooting:\n" +
-                                        "1. Check backend is running on port 8081\n" +
-                                        "2. Check URL: " + RetrofitClient.getBaseUrl() + "\n" +
-                                        "3. For real device, use computer's IP address",
+                                "Connection failed: " + t.getMessage(),
                                 Toast.LENGTH_LONG).show();
                     }
                 });
     }
+
 
     private void shakeView(View view) {
         ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationX", 0, 25, -25, 25, -25, 15, -15, 6, -6, 0);

@@ -1,14 +1,15 @@
 package com.example.skilllsetujava.api.models;
 
 public class LoginResponse {
+
     private String token;
     private String email;
     private String role;
     private Long studentId;
+    private Long collegeId;   // ✅ ADD THIS
     private String fullName;
     private String message;
 
-    // Getters and Setters
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
 
@@ -20,6 +21,9 @@ public class LoginResponse {
 
     public Long getStudentId() { return studentId; }
     public void setStudentId(Long studentId) { this.studentId = studentId; }
+
+    public Long getCollegeId() { return collegeId; }
+    public void setCollegeId(Long collegeId) { this.collegeId = collegeId; }
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
