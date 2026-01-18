@@ -49,6 +49,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 import android.content.Intent;
+
+import java.util.Locale;
 import java.util.Map;
 
 public class activity_login extends AppCompatActivity {
@@ -528,25 +530,18 @@ public class activity_login extends AppCompatActivity {
     private void handleLogin() {
 
         String password = etPassword.getText().toString().trim();
+        String identifier;
 
-        String identifier;   // email for student, username/email for TPO
-        String role;         // STUDENT or TPO
-
-        // 🧠 Decide based on checkbox / toggle
+        // ================= INPUT =================
         if (isStudentSelected) {
             identifier = etEmail.getText().toString().trim();
-            role = "STUDENT";
-
             if (identifier.isEmpty()) {
                 etEmail.setError("Email is required");
                 etEmail.requestFocus();
                 return;
             }
-
         } else {
             identifier = etUsername.getText().toString().trim();
-            role = "TPO";
-
             if (identifier.isEmpty()) {
                 etUsername.setError("Username is required");
                 etUsername.requestFocus();
@@ -560,14 +555,15 @@ public class activity_login extends AppCompatActivity {
             return;
         }
 
-        // Disable button
+        // ================= UI LOCK =================
         btnLogin.setEnabled(false);
         btnLogin.setText("Logging in...");
 
-        Log.d("Login", "Attempting login as " + role + " : " + identifier);
+        Log.d("LOGIN", "Login attempt → identifier=" + identifier);
 
-        // ✅ CORRECT request
-        LoginRequest request = new LoginRequest(identifier, password, role);
+        // 🔴 IMPORTANT:
+        // Backend AUTH DOES NOT NEED ROLE FROM CLIENT
+        LoginRequest request = new LoginRequest(identifier, password);
 
         RetrofitClient.getApiService()
                 .login(request)
@@ -580,55 +576,79 @@ public class activity_login extends AppCompatActivity {
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
 
-                        if (response.isSuccessful() && response.body() != null) {
-
-                            LoginResponse loginResponse = response.body();
-
-                            Log.d("Login", "✅ Login successful!");
-                            Log.d("Login", "Role: " + loginResponse.getRole());
-
-                            // Save auth data
-                            SharedPreferences prefs =
-                                    getSharedPreferences("auth", MODE_PRIVATE);
-
-                            prefs.edit()
-                                    .putString("token", loginResponse.getToken())
-                                    .putString("role", loginResponse.getRole())
-                                    .putLong("student_id",
-                                            loginResponse.getStudentId() != null
-                                                    ? loginResponse.getStudentId()
-                                                    : -1)
-                                    .putLong("college_id",
-                                            loginResponse.getCollegeId() != null
-                                                    ? loginResponse.getCollegeId()
-                                                    : -1)
-                                    .putString("full_name", loginResponse.getFullName())
-                                    .apply();
-
-                            Toast.makeText(activity_login.this,
-                                    "Welcome, " + loginResponse.getFullName(),
-                                    Toast.LENGTH_SHORT).show();
-
-                            // 🚀 ROLE BASED NAVIGATION
-                            if ("TPO".equalsIgnoreCase(loginResponse.getRole())) {
-                                startActivity(new Intent(
-                                        activity_login.this,
-                                        TPODashboardActivity.class
-                                ));
-                            } else {
-                                startActivity(new Intent(
-                                        activity_login.this,
-                                        activity_homepage.class
-                                ));
-                            }
-
-                            finish();
-
-                        } else {
+                        if (!response.isSuccessful() || response.body() == null) {
+                            Log.e("LOGIN", "Login failed → code=" + response.code());
                             Toast.makeText(activity_login.this,
                                     "Invalid credentials",
                                     Toast.LENGTH_LONG).show();
+                            return;
                         }
+
+                        LoginResponse res = response.body();
+
+                        // ================= LOG EVERYTHING =================
+                        Log.d("LOGIN", "Login OK");
+                        Log.d("LOGIN", "Token=" + (res.getToken() != null));
+                        Log.d("LOGIN", "Role=" + res.getRole());
+                        Log.d("LOGIN", "CollegeId=" + res.getCollegeId());
+
+                        // ================= SAVE AUTH (FIXED KEYS) =================
+                        SharedPreferences prefs =
+                                getSharedPreferences("auth", MODE_PRIVATE);
+
+                        prefs.edit()
+                                .putString("jwt_token", res.getToken())   // ✅ FIXED
+                                .putString("role", res.getRole())
+                                .putLong("student_id",
+                                        res.getStudentId() != null ? res.getStudentId() : -1)
+                                .putLong("college_id",
+                                        res.getCollegeId() != null ? res.getCollegeId() : -1)
+                                .putString("full_name", res.getFullName())
+                                .apply();
+
+                        Toast.makeText(activity_login.this,
+                                "Welcome, " + res.getFullName(),
+                                Toast.LENGTH_SHORT).show();
+
+                        // ================= ROLE BASED NAVIGATION =================
+                        String role = res.getRole();
+
+                        if (role == null) {
+                            Toast.makeText(activity_login.this,
+                                    "Role missing from server",
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        role = role.trim().toUpperCase(Locale.US);
+                        Log.d("LOGIN", "Navigating as " + role);
+
+                        Intent intent;
+
+                        switch (role) {
+                            case "ROLE_TPO":
+                                intent = new Intent(
+                                        activity_login.this,
+                                        TPODashboardActivity.class
+                                );
+                                break;
+
+                            case "ROLE_STUDENT":
+                                intent = new Intent(
+                                        activity_login.this,
+                                        activity_homepage.class
+                                );
+                                break;
+
+                            default:
+                                Toast.makeText(activity_login.this,
+                                        "Unsupported role: " + role,
+                                        Toast.LENGTH_LONG).show();
+                                return;
+                        }
+
+                        startActivity(intent);
+                        finish();
                     }
 
                     @Override
@@ -637,14 +657,15 @@ public class activity_login extends AppCompatActivity {
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
 
-                        Log.e("Login", "❌ Network error", t);
+                        Log.e("LOGIN", "Network error", t);
 
                         Toast.makeText(activity_login.this,
-                                "Connection failed: " + t.getMessage(),
+                                "Network error: " + t.getMessage(),
                                 Toast.LENGTH_LONG).show();
                     }
                 });
     }
+
 
 
     private void shakeView(View view) {

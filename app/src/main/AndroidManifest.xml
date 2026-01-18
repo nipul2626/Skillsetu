@@ -67,16 +67,14 @@
             android:windowSoftInputMode="adjustResize" /> <!-- ✅ ONLY LAUNCHER -->
         <activity
             android:name=".activity_login"
-            android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
-            android:theme="@style/AppTheme"
-            android:windowSoftInputMode="adjustResize">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

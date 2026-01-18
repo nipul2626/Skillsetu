@@ -3,6 +3,7 @@ package com.example.skilllsetujava;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -75,6 +76,16 @@ public class activity_homepage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
+
+        SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
+        String role = prefs.getString("role", "");
+
+        if (!"ROLE_STUDENT".equals(role)) {
+            startActivity(new Intent(this, activity_login.class));
+            finish();
+            return;
+        }
+
 
         // Initialize views
         initViews();

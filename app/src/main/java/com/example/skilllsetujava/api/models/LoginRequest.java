@@ -4,8 +4,15 @@ public class LoginRequest {
 
     private String email;     // email OR username
     private String password;
-    private String role;      // STUDENT or TPO
+    private String role;      // optional
 
+    // ✅ NEW CONSTRUCTOR (RECOMMENDED)
+    public LoginRequest(String email, String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    // Existing constructor (keep it if needed elsewhere)
     public LoginRequest(String email, String password, String role) {
         this.email = email;
         this.password = password;
