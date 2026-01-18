@@ -95,7 +95,7 @@ public class RoadmapActivity extends AppCompatActivity {
         milestonesContainer = findViewById(R.id.milestonesContainer);
 
         tvRoadmapTitle.setText("Your 30-Day Training Plan");
-        tvJobRole.setText(jobRole + " â€¢ " + interviewType);
+        tvJobRole.setText(jobRole + " \uD83D\uDD39 " + interviewType);
 
         btnBack.setOnClickListener(v -> finish());
     }
@@ -161,7 +161,7 @@ public class RoadmapActivity extends AppCompatActivity {
     private void displayFocusAreas() {
         if (trainingPlan.focusAreas == null || trainingPlan.focusAreas.isEmpty()) return;
 
-        TextView sectionTitle = createSectionTitle("ðŸŽ¯ Key Focus Areas");
+        TextView sectionTitle = createSectionTitle("\uD83C\uDFAF Key Focus Areas");
         focusAreasContainer.addView(sectionTitle);
 
         for (int i = 0; i < trainingPlan.focusAreas.size(); i++) {
@@ -223,7 +223,7 @@ public class RoadmapActivity extends AppCompatActivity {
         // Progress info
         TextView tvProgress = new TextView(this);
         tvProgress.setText(String.format(Locale.US,
-                "Current: %d/10  â†’  Target: %d/10  â€¢  %d hours estimated",
+                "Current: %d/10  →  Target: %d/10  \uD83D\uDD39  %d hours estimated",
                 area.currentLevel, area.targetLevel, area.estimatedHours));
         tvProgress.setTextColor(0xEEFFFFFF);
         tvProgress.setTextSize(15); // âœ¨ Larger text
@@ -258,7 +258,7 @@ public class RoadmapActivity extends AppCompatActivity {
         // Key topics
         if (area.keyTopics != null && !area.keyTopics.isEmpty()) {
             TextView tvTopicsLabel = new TextView(this);
-            tvTopicsLabel.setText("ðŸ“š Key Topics:");
+            tvTopicsLabel.setText("\uD83D\uDCDA Key Topics:");
             tvTopicsLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
             tvTopicsLabel.setTextSize(16); // âœ¨ Larger text
             tvTopicsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -266,7 +266,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
             for (String topic : area.keyTopics) {
                 TextView tvTopic = new TextView(this);
-                tvTopic.setText("â€¢ " + topic);
+                tvTopic.setText("\uD83D\uDD39 " + topic);
                 tvTopic.setTextColor(0xFFFFFFFF);
                 tvTopic.setTextSize(15); // âœ¨ Larger text
                 tvTopic.setLineSpacing(3, 1f);
@@ -283,7 +283,7 @@ public class RoadmapActivity extends AppCompatActivity {
         // Resources
         if (area.resources != null && !area.resources.isEmpty()) {
             TextView tvResourcesLabel = new TextView(this);
-            tvResourcesLabel.setText("ðŸ”— Resources:");
+            tvResourcesLabel.setText("\uD83D\uDD17 Resources:");
             tvResourcesLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
             tvResourcesLabel.setTextSize(16); // âœ¨ Larger text
             tvResourcesLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -380,7 +380,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Link
         TextView tvLink = new TextView(this);
-        tvLink.setText("ðŸ”— " + resource.link);
+        tvLink.setText("\uD83D\uDD17 " + resource.link);
         tvLink.setTextColor(0xFF00E5CC); // âœ¨ Cyan
         tvLink.setTextSize(14); // âœ¨ Larger text
         layout.addView(tvLink);
@@ -419,12 +419,12 @@ public class RoadmapActivity extends AppCompatActivity {
 
     private String getResourceIcon(String type) {
         switch (type.toLowerCase()) {
-            case "documentation": return "ðŸ“„";
-            case "tutorial": return "ðŸŽ“";
-            case "course": return "ðŸ“¹";
-            case "book": return "ðŸ“–";
-            case "practice": return "ðŸ’ª";
-            default: return "ðŸ“Œ";
+            case "documentation": return "\uD83D\uDCC4";
+            case "tutorial": return "\uD83C\uDF93";
+            case "course": return "\uD83D\uDCF9";
+            case "book": return "\uD83D\uDCD6";
+            case "practice": return "\uD83D\uDCAA";
+            default: return "\uD83D\uDCCC";
         }
     }
 
@@ -434,9 +434,9 @@ public class RoadmapActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d("Roadmap", "âœ… Found " + trainingPlan.weeklyPlan.size() + " weeks in plan");
+        Log.d("Roadmap", "✨ Found " + trainingPlan.weeklyPlan.size() + " weeks in plan");
 
-        TextView sectionTitle = createSectionTitle("ðŸ“… 4-Week Structured Plan");
+        TextView sectionTitle = createSectionTitle("\uD83D\uDCC5 4-Week Structured Plan");
         weeklyPlanContainer.addView(sectionTitle);
 
         for (int i = 0; i < trainingPlan.weeklyPlan.size(); i++) {
@@ -464,7 +464,7 @@ public class RoadmapActivity extends AppCompatActivity {
         );
         retestParams.setMargins(0, 0, 0, dpToPx(12));
         btnRetest.setLayoutParams(retestParams);
-        btnRetest.setText("ðŸ”„ Ready to Retest? Take Interview Again");
+        btnRetest.setText("\uD83D\uDD04 Ready to Retest? Take Interview Again");
         btnRetest.setTextSize(16);
         btnRetest.setTextColor(0xFFFFFFFF);
 
@@ -497,7 +497,7 @@ public class RoadmapActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
         btnHome.setLayoutParams(homeParams);
-        btnHome.setText("ðŸ  Back to Home");
+        btnHome.setText("\uD83C\uDFE0  Back to Home");
         btnHome.setTextSize(16);
         btnHome.setTextColor(0xFFFFFFFF);
 
@@ -552,7 +552,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Daily schedule
         TextView tvSchedule = new TextView(this);
-        tvSchedule.setText("â° Study: " + week.studyTime + " â€¢ Practice: " + week.practiceTime);
+        tvSchedule.setText("⏰ Study: " + week.studyTime + " \uD83D\uDD39 Practice: " + week.practiceTime);
         tvSchedule.setTextColor(0xFF00E5CC); // âœ¨ Cyan
         tvSchedule.setTextSize(16); // âœ¨ Larger text
         LinearLayout.LayoutParams schedParams = new LinearLayout.LayoutParams(
@@ -565,7 +565,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Topics with checkboxes
         TextView tvTopicsLabel = new TextView(this);
-        tvTopicsLabel.setText("ðŸ“š Topics to Cover:");
+        tvTopicsLabel.setText("\uD83D\uDCDA Topics to Cover:");
         tvTopicsLabel.setTextColor(0xFFFFFFFF);
         tvTopicsLabel.setTextSize(17); // âœ¨ Larger text
         tvTopicsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -608,7 +608,7 @@ public class RoadmapActivity extends AppCompatActivity {
         // Practice problems
         if (week.practiceProblems != null && !week.practiceProblems.isEmpty()) {
             TextView tvProblemsLabel = new TextView(this);
-            tvProblemsLabel.setText("ðŸ’ª Practice Problems:");
+            tvProblemsLabel.setText("\uD83D\uDCAA Practice Problems:");
             tvProblemsLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
             tvProblemsLabel.setTextSize(17); // âœ¨ Larger text
             tvProblemsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -629,7 +629,7 @@ public class RoadmapActivity extends AppCompatActivity {
         // Projects
         if (week.projects != null && !week.projects.isEmpty()) {
             TextView tvProjectsLabel = new TextView(this);
-            tvProjectsLabel.setText("ðŸ› ï¸ Projects:");
+            tvProjectsLabel.setText("\uD83D\uDEE0\uFE0F Projects:");
             tvProjectsLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
             tvProjectsLabel.setTextSize(17); // âœ¨ Larger text
             tvProjectsLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -643,7 +643,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
             for (String project : week.projects) {
                 TextView tvProject = new TextView(this);
-                tvProject.setText("â€¢ " + project);
+                tvProject.setText("\uD83D\uDD39" + project);
                 tvProject.setTextColor(0xFFFFFFFF);
                 tvProject.setTextSize(16); // âœ¨ Larger text
                 tvProject.setLineSpacing(3, 1f);
@@ -659,7 +659,7 @@ public class RoadmapActivity extends AppCompatActivity {
 
         // Weekend task
         TextView tvWeekendLabel = new TextView(this);
-        tvWeekendLabel.setText("ðŸŽ¯ Weekend Challenge:");
+        tvWeekendLabel.setText("\uD83C\uDFAF Weekend Challenge:");
         tvWeekendLabel.setTextColor(0xFF00E5CC); // âœ¨ Cyan
         tvWeekendLabel.setTextSize(17); // âœ¨ Larger text
         tvWeekendLabel.setTypeface(null, android.graphics.Typeface.BOLD);
@@ -773,7 +773,7 @@ public class RoadmapActivity extends AppCompatActivity {
     private void displayMilestones() {
         if (trainingPlan.milestones == null || trainingPlan.milestones.isEmpty()) return;
 
-        TextView sectionTitle = createSectionTitle("ðŸ† Milestones");
+        TextView sectionTitle = createSectionTitle("\uD83C\uDFC6 Milestones");
         milestonesContainer.addView(sectionTitle);
 
         for (int i = 0; i < trainingPlan.milestones.size(); i++) {
@@ -833,7 +833,7 @@ public class RoadmapActivity extends AppCompatActivity {
         content.addView(tvMilestone);
 
         TextView tvVerification = new TextView(this);
-        tvVerification.setText("âœ… " + milestone.verification);
+        tvVerification.setText("✨ " + milestone.verification);
         tvVerification.setTextColor(0xEEFFFFFF);
         tvVerification.setTextSize(15); // âœ¨ Larger text
         tvVerification.setLineSpacing(2, 1f);
@@ -909,11 +909,11 @@ public class RoadmapActivity extends AppCompatActivity {
     }
 
     private String getReadinessLabel(int score) {
-        if (score >= 90) return "ðŸŒŸ Expert Level";
-        if (score >= 80) return "ðŸŽ¯ Advanced";
-        if (score >= 70) return "âœ… Proficient";
-        if (score >= 60) return "ðŸ“š Intermediate";
-        return "ðŸŒ± Beginner";
+        if (score >= 90) return "\uD83C\uDF1F Expert Level";
+        if (score >= 80) return "\uD83C\uDFAF Advanced";
+        if (score >= 70) return "✨ Proficient";
+        if (score >= 60) return "\uD83D\uDCDA Intermediate";
+        return "\uD83C\uDF31 Beginner";
     }
 
     private int dpToPx(int dp) {
