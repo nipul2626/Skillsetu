@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -35,12 +36,21 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import com.example.skilllsetujava.api.RetrofitClient;
+import com.example.skilllsetujava.api.models.RegisterRequest;
+import com.example.skilllsetujava.api.models.RegisterResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class activity_signup extends AppCompatActivity {
+
+    private static final String TAG = "SignupActivity";
 
     // UI Components
     private ViewFlipper viewFlipper;
@@ -77,7 +87,6 @@ public class activity_signup extends AppCompatActivity {
     private MaterialButton btnBackStep3, btnRegister;
 
     // Social Login
-    private MaterialButton btnGoogleSignup, btnTikTokSignup, btnFacebookSignup;
     private TextView tvLogin;
 
     // Data Storage
@@ -86,6 +95,7 @@ public class activity_signup extends AppCompatActivity {
 
     private int currentStep = 0;
     private boolean isAnimating = false;
+    private boolean isRegistering = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,7 +110,6 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void initViews() {
-        // Main containers
         viewFlipper = findViewById(R.id.viewFlipper);
         backButton = findViewById(R.id.backButton);
         signupCard = findViewById(R.id.signupCard);
@@ -162,7 +171,6 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void setupInitialState() {
-        // Set selector position for Student
         selectorBackgroundSignup.post(() -> {
             int width = btnStudentSignup.getWidth();
             ViewGroup.LayoutParams params = selectorBackgroundSignup.getLayoutParams();
@@ -174,13 +182,11 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        // Back button
         backButton.setOnClickListener(v -> {
             animateClick(backButton);
             onBackPressed();
         });
 
-        // Role selection
         btnStudentSignup.setOnClickListener(v -> {
             if (!isStudentSelected && !isAnimating) {
                 selectRole(true);
@@ -193,14 +199,11 @@ public class activity_signup extends AppCompatActivity {
             }
         });
 
-        // Step 1
         btnNextStep1.setOnClickListener(v -> validateAndProceedStep1());
 
-        // Date picker
         etDOB.setOnClickListener(v -> showDatePicker());
         dobInputLayout.setEndIconOnClickListener(v -> showDatePicker());
 
-        // Email validation
         etEmailSignup.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -220,15 +223,12 @@ public class activity_signup extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Step 2
         btnBackStep2.setOnClickListener(v -> goToPreviousStep());
         btnNextStep2.setOnClickListener(v -> validateAndProceedStep2());
 
-        // Step 3
         btnBackStep3.setOnClickListener(v -> goToPreviousStep());
         btnRegister.setOnClickListener(v -> validateAndRegister());
 
-        // Password strength
         etCreatePassword.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -242,7 +242,6 @@ public class activity_signup extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Login redirect
         tvLogin.setOnClickListener(v -> {
             Intent intent = new Intent(activity_signup.this, activity_login.class);
             startActivity(intent);
@@ -275,7 +274,6 @@ public class activity_signup extends AppCompatActivity {
 
         slideAnimator.start();
 
-        // Update text colors
         btnStudentSignup.setTextColor(ContextCompat.getColor(this,
                 isStudent ? R.color.primary_purple : R.color.white));
         btnTPOSignup.setTextColor(ContextCompat.getColor(this,
@@ -283,13 +281,11 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void validateAndProceedStep1() {
-        // Get values
         fullName = etFullName.getText().toString().trim();
         email = etEmailSignup.getText().toString().trim();
         phone = etPhone.getText().toString().trim();
         dob = etDOB.getText().toString().trim();
 
-        // Validate Full Name
         if (fullName.isEmpty()) {
             fullNameInputLayout.setError("Full name is required");
             shakeView(fullNameInputLayout);
@@ -297,7 +293,6 @@ public class activity_signup extends AppCompatActivity {
         }
         fullNameInputLayout.setError(null);
 
-        // Validate Email
         if (email.isEmpty()) {
             emailInputLayoutSignup.setError("Email is required");
             shakeView(emailInputLayoutSignup);
@@ -310,7 +305,6 @@ public class activity_signup extends AppCompatActivity {
         }
         emailInputLayoutSignup.setError(null);
 
-        // Validate Phone
         if (phone.isEmpty()) {
             phoneInputLayout.setError("Phone number is required");
             shakeView(phoneInputLayout);
@@ -323,7 +317,6 @@ public class activity_signup extends AppCompatActivity {
         }
         phoneInputLayout.setError(null);
 
-        // Validate DOB
         if (dob.isEmpty()) {
             dobInputLayout.setError("Date of birth is required");
             shakeView(dobInputLayout);
@@ -331,18 +324,15 @@ public class activity_signup extends AppCompatActivity {
         }
         dobInputLayout.setError(null);
 
-        // Proceed to next step
         goToNextStep();
     }
 
     private void validateAndProceedStep2() {
-        // Get values
         college = etCollege.getText().toString().trim();
         branch = etBranch.getText().toString().trim();
         year = etYear.getText().toString().trim();
         cgpa = etCGPA.getText().toString().trim();
 
-        // Validate College
         if (college.isEmpty()) {
             collegeInputLayout.setError("College name is required");
             shakeView(collegeInputLayout);
@@ -350,7 +340,6 @@ public class activity_signup extends AppCompatActivity {
         }
         collegeInputLayout.setError(null);
 
-        // Validate Branch
         if (branch.isEmpty()) {
             branchInputLayout.setError("Branch is required");
             shakeView(branchInputLayout);
@@ -358,7 +347,6 @@ public class activity_signup extends AppCompatActivity {
         }
         branchInputLayout.setError(null);
 
-        // Validate Year
         if (year.isEmpty()) {
             yearInputLayout.setError("Year is required");
             shakeView(yearInputLayout);
@@ -366,24 +354,15 @@ public class activity_signup extends AppCompatActivity {
         }
         yearInputLayout.setError(null);
 
-        // Validate CGPA
-        if (cgpa.isEmpty()) {
-            cgpaInputLayout.setError("CGPA/Percentage is required");
-            shakeView(cgpaInputLayout);
-            return;
-        }
-        cgpaInputLayout.setError(null);
-
-        // Proceed to next step
         goToNextStep();
     }
 
     private void validateAndRegister() {
-        // Get password values
+        if (isRegistering) return;
+
         password = etCreatePassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        // Validate Password
         if (password.isEmpty()) {
             createPasswordInputLayout.setError("Password is required");
             shakeView(createPasswordInputLayout);
@@ -396,7 +375,6 @@ public class activity_signup extends AppCompatActivity {
         }
         createPasswordInputLayout.setError(null);
 
-        // Validate Confirm Password
         if (confirmPassword.isEmpty()) {
             confirmPasswordInputLayout.setError("Please confirm your password");
             shakeView(confirmPasswordInputLayout);
@@ -409,26 +387,92 @@ public class activity_signup extends AppCompatActivity {
         }
         confirmPasswordInputLayout.setError(null);
 
-        // Validate Terms
         if (!cbTerms.isChecked()) {
             Toast.makeText(this, "Please agree to Terms & Privacy Policy", Toast.LENGTH_SHORT).show();
             shakeView(cbTerms);
             return;
         }
 
-        // Animate button and register
-        animateButtonPress(btnRegister);
+        registerUser();
+    }
 
-        new Handler().postDelayed(() -> {
-            // TODO: Save data locally or to Firebase
-            // For now, just show success and navigate
-            Toast.makeText(this, "âœ… Registration Successful!", Toast.LENGTH_SHORT).show();
+    private void registerUser() {
+        isRegistering = true;
+        btnRegister.setEnabled(false);
+        btnRegister.setText("Registering...");
 
-            // Navigate to login
-            Intent intent = new Intent(activity_signup.this, activity_login.class);
-            startActivity(intent);
-            finish();
-        }, 300);
+        Integer yearOfStudy = getYearNumber(year);
+
+        RegisterRequest request = new RegisterRequest(
+                fullName,
+                email,
+                password,
+                phone,
+                college,
+                branch,
+                yearOfStudy,
+                dob
+        );
+
+        Log.d(TAG, "Registering user: " + email);
+
+        RetrofitClient.getApiService()
+                .register(request)
+                .enqueue(new Callback<RegisterResponse>() {
+                    @Override
+                    public void onResponse(Call<RegisterResponse> call, Response<RegisterResponse> response) {
+                        isRegistering = false;
+                        btnRegister.setEnabled(true);
+                        btnRegister.setText("Register");
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            RegisterResponse res = response.body();
+
+                            if (res.isSuccess()) {
+                                Log.d(TAG, "Registration successful: " + res.getMessage());
+                                Toast.makeText(activity_signup.this,
+                                        "✓ " + res.getMessage(),
+                                        Toast.LENGTH_SHORT).show();
+
+                                new Handler().postDelayed(() -> {
+                                    Intent intent = new Intent(activity_signup.this, activity_login.class);
+                                    intent.putExtra("registered_email", email);
+                                    startActivity(intent);
+                                    finish();
+                                }, 500);
+                            } else {
+                                Toast.makeText(activity_signup.this,
+                                        res.getMessage(),
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Log.e(TAG, "Registration failed: " + response.code());
+                            Toast.makeText(activity_signup.this,
+                                    "Registration failed. Please try again.",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<RegisterResponse> call, Throwable t) {
+                        isRegistering = false;
+                        btnRegister.setEnabled(true);
+                        btnRegister.setText("Register");
+
+                        Log.e(TAG, "Network error: " + t.getMessage(), t);
+                        Toast.makeText(activity_signup.this,
+                                "Network error: " + t.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private Integer getYearNumber(String year) {
+        if (year.contains("1st")) return 1;
+        if (year.contains("2nd")) return 2;
+        if (year.contains("3rd")) return 3;
+        if (year.contains("4th") || year.contains("Final")) return 4;
+        return 1;
     }
 
     private void goToNextStep() {
@@ -446,7 +490,6 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void animateStepTransition(boolean forward) {
-        // Animate ViewFlipper
         if (forward) {
             viewFlipper.setInAnimation(this, R.anim.slide_in_right);
             viewFlipper.setOutAnimation(this, R.anim.slide_out_left);
@@ -457,12 +500,10 @@ public class activity_signup extends AppCompatActivity {
             viewFlipper.showPrevious();
         }
 
-        // Update stepper UI
         updateStepperUI();
     }
 
     private void updateStepperUI() {
-        // Reset all steps
         resetStepCircle(step1Circle, step1Number, step1Label);
         resetStepCircle(step2Circle, step2Number, step2Label);
         resetStepCircle(step3Circle, step3Number, step3Label);
@@ -470,7 +511,6 @@ public class activity_signup extends AppCompatActivity {
         progressLine1.setBackgroundResource(R.drawable.progress_line_inactive);
         progressLine2.setBackgroundResource(R.drawable.progress_line_inactive);
 
-        // Highlight current and completed steps
         if (currentStep >= 0) {
             activateStepCircle(step1Circle, step1Number, step1Label);
         }
@@ -499,7 +539,6 @@ public class activity_signup extends AppCompatActivity {
         number.setAlpha(1f);
         label.setAlpha(1f);
 
-        // Bounce animation
         circle.animate()
                 .scaleX(1.2f)
                 .scaleY(1.2f)
@@ -530,7 +569,6 @@ public class activity_signup extends AppCompatActivity {
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
 
-        // Set max date to 18 years ago
         Calendar maxDate = Calendar.getInstance();
         maxDate.add(Calendar.YEAR, -18);
         datePickerDialog.getDatePicker().setMaxDate(maxDate.getTimeInMillis());
@@ -571,20 +609,12 @@ public class activity_signup extends AppCompatActivity {
 
         int strength = 0;
 
-        // Length
         if (password.length() >= 8) strength += 25;
         if (password.length() >= 12) strength += 15;
 
-        // Contains lowercase
         if (Pattern.compile("[a-z]").matcher(password).find()) strength += 15;
-
-        // Contains uppercase
         if (Pattern.compile("[A-Z]").matcher(password).find()) strength += 15;
-
-        // Contains digit
         if (Pattern.compile("[0-9]").matcher(password).find()) strength += 15;
-
-        // Contains special character
         if (Pattern.compile("[!@#$%^&*(),.?\":{}|<>]").matcher(password).find()) strength += 15;
 
         return Math.min(strength, 100);
@@ -595,11 +625,9 @@ public class activity_signup extends AppCompatActivity {
     }
 
     private void animateEntrance() {
-        // Initially hide
         signupCard.setAlpha(0f);
         signupCard.setTranslationY(50f);
 
-        // Animate in
         new Handler().postDelayed(() -> {
             signupCard.animate()
                     .alpha(1f)
@@ -627,22 +655,6 @@ public class activity_signup extends AppCompatActivity {
                                 .scaleX(1f)
                                 .scaleY(1f)
                                 .setDuration(100)
-                                .start()
-                )
-                .start();
-    }
-
-    private void animateButtonPress(View button) {
-        button.animate()
-                .scaleX(0.95f)
-                .scaleY(0.95f)
-                .setDuration(100)
-                .withEndAction(() ->
-                        button.animate()
-                                .scaleX(1f)
-                                .scaleY(1f)
-                                .setDuration(100)
-                                .setInterpolator(new OvershootInterpolator())
                                 .start()
                 )
                 .start();

@@ -7,11 +7,6 @@ import retrofit2.http.*;
 import java.util.List;
 import java.util.Map;
 
-import com.example.skilllsetujava.api.models.DashboardResponse;
-import com.example.skilllsetujava.api.models.TrendDataDTO;
-import com.example.skilllsetujava.api.models.StudentFilterRequest;
-
-
 public interface ApiService {
 
     // ==================== TEST ENDPOINTS ====================
@@ -28,7 +23,15 @@ public interface ApiService {
     Call<LoginResponse> login(@Body LoginRequest request);
 
     @POST("api/auth/register")
-    Call<Void> register(@Body RegisterRequest request);
+    Call<RegisterResponse> register(@Body RegisterRequest request);
+
+    // ==================== PROFILE ====================
+
+    @GET("api/profile/{studentId}")
+    Call<ProfileResponse> getStudentProfile(
+            @Header("Authorization") String token,
+            @Path("studentId") Long studentId
+    );
 
     // ==================== INTERVIEWS ====================
 
@@ -38,17 +41,16 @@ public interface ApiService {
             @Body InterviewRequest request
     );
 
-    @POST("/api/analytics/refresh/{collegeId}")
-    Call<Map<String, String>> refreshAnalytics(
-            @Header("Authorization") String token,
-            @Path("collegeId") Long collegeId
-    );
-
-
     @POST("api/analytics/students/list/{collegeId}")
     Call<Map<String, Object>> getStudents(
             @Path("collegeId") long collegeId,
             @Body StudentFilterRequest request
+    );
+
+    @POST("api/analytics/refresh/{collegeId}")
+    Call<Map<String, String>> refreshAnalytics(
+            @Header("Authorization") String token,
+            @Path("collegeId") Long collegeId
     );
 
     @GET("api/interviews/student/{studentId}")
@@ -71,15 +73,14 @@ public interface ApiService {
             @Path("studentId") Long studentId
     );
 
-
-    // 📊 TPO Dashboard stats
+    // TPO Dashboard stats
     @GET("api/analytics/dashboard/{collegeId}")
     Call<Map<String, Object>> getTPODashboardStats(
             @Header("Authorization") String token,
             @Path("collegeId") Long collegeId
     );
 
-    // 👥 Filtered students (TPO)
+    // Filtered students (TPO)
     @POST("api/analytics/students/list/{collegeId}")
     Call<Map<String, Object>> getFilteredStudents(
             @Header("Authorization") String token,
@@ -87,7 +88,7 @@ public interface ApiService {
             @Body StudentFilterRequest request
     );
 
-    // 📈 Trends (TPO)
+    // Trends (TPO)
     @GET("api/analytics/trends/{collegeId}")
     Call<TrendDataDTO> getTrends(
             @Header("Authorization") String token,
@@ -95,11 +96,10 @@ public interface ApiService {
             @Query("days") int days
     );
 
-    // 📊 Skill gaps (TPO)
+    // Skill gaps (TPO)
     @GET("api/analytics/skill-gaps/{collegeId}")
     Call<SkillGapDTO> getSkillGaps(
             @Header("Authorization") String token,
             @Path("collegeId") Long collegeId
     );
-
 }

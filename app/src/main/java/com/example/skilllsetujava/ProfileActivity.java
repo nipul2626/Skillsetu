@@ -3,8 +3,10 @@ package com.example.skilllsetujava;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
@@ -20,7 +22,15 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 
+import com.example.skilllsetujava.api.RetrofitClient;
+import com.example.skilllsetujava.api.models.ProfileResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class ProfileActivity extends AppCompatActivity {
+
+    private static final String TAG = "ProfileActivity";
 
     // UI Components
     private ImageView ivBack, ivProfilePicture, ivEdit;
@@ -41,17 +51,14 @@ public class ProfileActivity extends AppCompatActivity {
     // Sections
     private LinearLayout statsSection, academicSection, actionsSection;
 
-    // Sample Data (Later from Firebase/SharedPreferences)
-    private String name = "Raj Kumar";
-    private String email = "raj.kumar@college.edu";
-    private String phone = "+91 9876543210";
-    private String college = "Indian Institute of Technology";
-    private String branch = "Computer Science";
-    private String year = "3rd Year";
-    private String cgpa = "8.5";
-    private int totalInterviews = 24;
-    private int skillsLearned = 12;
-    private int averageScore = 85;
+    // Loading indicator
+    private View loadingOverlay;
+    private ProgressBar loadingSpinner;
+
+    // Data
+    private Long studentId;
+    private String token;
+    private ProfileResponse profileData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,10 +66,16 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         initViews();
-        loadUserData();
+        loadAuthData();
         setupListeners();
         animateEntrance();
-        animateStats();
+
+        if (studentId != null && token != null) {
+            loadProfileData();
+        } else {
+            Toast.makeText(this, "Session expired. Please login again.", Toast.LENGTH_LONG).show();
+            redirectToLogin();
+        }
     }
 
     private void initViews() {
@@ -112,17 +125,121 @@ public class ProfileActivity extends AppCompatActivity {
         actionsSection = findViewById(R.id.actionsSection);
     }
 
-    private void loadUserData() {
-        // TODO: Load from SharedPreferences or Firebase
-        // For now, using sample data
+    private void loadAuthData() {
+        SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
 
-        tvStudentName.setText(name);
-        tvStudentEmail.setText(email);
-        tvStudentPhone.setText(phone);
-        tvStudentCollege.setText(college);
-        tvStudentBranch.setText(branch);
-        tvStudentYear.setText(year);
-        tvStudentCGPA.setText("CGPA: " + cgpa);
+        token = prefs.getString("jwt_token", null);
+        studentId = prefs.getLong("student_id", -1);
+
+        if (studentId == -1) {
+            studentId = null;
+        }
+
+        Log.d(TAG, "Loaded auth data - StudentId: " + studentId + ", Token: " + (token != null));
+    }
+
+    private void loadProfileData() {
+        Log.d(TAG, "Loading profile for student ID: " + studentId);
+
+        String authHeader = "Bearer " + token;
+
+        RetrofitClient.getApiService()
+                .getStudentProfile(authHeader, studentId)
+                .enqueue(new Callback<ProfileResponse>() {
+                    @Override
+                    public void onResponse(Call<ProfileResponse> call, Response<ProfileResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            profileData = response.body();
+                            Log.d(TAG, "Profile loaded successfully");
+                            bindProfileData();
+                        } else {
+                            Log.e(TAG, "Failed to load profile: " + response.code());
+                            if (response.code() == 401) {
+                                Toast.makeText(ProfileActivity.this,
+                                        "Session expired. Please login again.",
+                                        Toast.LENGTH_LONG).show();
+                                redirectToLogin();
+                            } else {
+                                Toast.makeText(ProfileActivity.this,
+                                        "Failed to load profile",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ProfileResponse> call, Throwable t) {
+                        Log.e(TAG, "Network error: " + t.getMessage(), t);
+                        Toast.makeText(ProfileActivity.this,
+                                "Network error: " + t.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void bindProfileData() {
+        if (profileData == null) return;
+
+        // Personal Info
+        tvStudentName.setText(profileData.getFullName() != null ? profileData.getFullName() : "N/A");
+        tvStudentEmail.setText(profileData.getEmail() != null ? profileData.getEmail() : "N/A");
+        tvStudentPhone.setText(profileData.getPhoneNumber() != null ? profileData.getPhoneNumber() : "N/A");
+
+        // Academic Info
+        tvStudentCollege.setText(profileData.getCollege() != null ? profileData.getCollege() : "N/A");
+        tvStudentBranch.setText(profileData.getBranch() != null ? profileData.getBranch() : "N/A");
+        tvStudentYear.setText(profileData.getYear() != null ? profileData.getYear() : "N/A");
+
+        double cgpa = profileData.getCgpa() != null ? profileData.getCgpa() : 0.0;
+        tvStudentCGPA.setText("CGPA: " + String.format("%.1f", cgpa));
+
+        // Animate stats with real data
+        animateStatsWithData();
+    }
+
+    private void animateStatsWithData() {
+        int totalInterviews = profileData.getTotalInterviews() != null ? profileData.getTotalInterviews() : 0;
+        int skillsLearned = profileData.getSkillsLearned() != null ? profileData.getSkillsLearned() : 0;
+        int averageScore = profileData.getAverageScore() != null ? profileData.getAverageScore() : 0;
+
+        // Animate interview count
+        new Handler().postDelayed(() -> {
+            ValueAnimator interviewAnimator = ValueAnimator.ofInt(0, totalInterviews);
+            interviewAnimator.setDuration(1500);
+            interviewAnimator.setInterpolator(new DecelerateInterpolator());
+            interviewAnimator.addUpdateListener(animation -> {
+                int value = (int) animation.getAnimatedValue();
+                tvInterviewsCount.setText(String.valueOf(value));
+                pbInterviews.setProgress((int) (((float) value / 50) * 100));
+            });
+            interviewAnimator.start();
+        }, 500);
+
+        // Animate skills count
+        new Handler().postDelayed(() -> {
+            ValueAnimator skillsAnimator = ValueAnimator.ofInt(0, skillsLearned);
+            skillsAnimator.setDuration(1500);
+            skillsAnimator.setInterpolator(new DecelerateInterpolator());
+            skillsAnimator.addUpdateListener(animation -> {
+                int value = (int) animation.getAnimatedValue();
+                tvSkillsCount.setText(String.valueOf(value));
+                pbSkills.setProgress((int) (((float) value / 20) * 100));
+            });
+            skillsAnimator.start();
+        }, 700);
+
+        // Animate score
+        new Handler().postDelayed(() -> {
+            ValueAnimator scoreAnimator = ValueAnimator.ofInt(0, averageScore);
+            scoreAnimator.setDuration(1500);
+            scoreAnimator.setInterpolator(new DecelerateInterpolator());
+            scoreAnimator.addUpdateListener(animation -> {
+                int value = (int) animation.getAnimatedValue();
+                tvScoreValue.setText(value + "%");
+                pbScore.setProgress(value);
+            });
+            scoreAnimator.start();
+        }, 900);
     }
 
     private void setupListeners() {
@@ -136,68 +253,58 @@ public class ProfileActivity extends AppCompatActivity {
         ivEdit.setOnClickListener(v -> {
             animateClick(ivEdit);
             Toast.makeText(this, "Edit profile picture", Toast.LENGTH_SHORT).show();
-            // TODO: Open image picker
         });
 
         // Stats cards
         statInterviewsCard.setOnClickListener(v -> {
             animateCardClick(statInterviewsCard);
             Toast.makeText(this, "View Interview History", Toast.LENGTH_SHORT).show();
-            // TODO: Open interview history
         });
 
         statSkillsCard.setOnClickListener(v -> {
             animateCardClick(statSkillsCard);
             Toast.makeText(this, "View Skills Dashboard", Toast.LENGTH_SHORT).show();
-            // TODO: Open skills dashboard
         });
 
         statScoreCard.setOnClickListener(v -> {
             animateCardClick(statScoreCard);
             Toast.makeText(this, "View Performance Analytics", Toast.LENGTH_SHORT).show();
-            // TODO: Open analytics
         });
 
         // Academic card
         academicCard.setOnClickListener(v -> {
             animateCardClick(academicCard);
             Toast.makeText(this, "View Academic Details", Toast.LENGTH_SHORT).show();
-            // TODO: Open academic details
         });
 
         // Skills card
         skillsCard.setOnClickListener(v -> {
             animateCardClick(skillsCard);
             Toast.makeText(this, "Manage Skills", Toast.LENGTH_SHORT).show();
-            // TODO: Open skills manager
         });
 
         // Achievements card
         achievementsCard.setOnClickListener(v -> {
             animateCardClick(achievementsCard);
             Toast.makeText(this, "View Achievements", Toast.LENGTH_SHORT).show();
-            // TODO: Open achievements
         });
 
         // Settings card
         settingsCard.setOnClickListener(v -> {
             animateCardClick(settingsCard);
             Toast.makeText(this, "Open Settings", Toast.LENGTH_SHORT).show();
-            // TODO: Open settings
         });
 
         // Edit Profile button
         btnEditProfile.setOnClickListener(v -> {
             animateButtonPress(btnEditProfile);
             Toast.makeText(this, "Edit Profile", Toast.LENGTH_SHORT).show();
-            // TODO: Open edit profile screen
         });
 
         // View Resume button
         btnViewResume.setOnClickListener(v -> {
             animateButtonPress(btnViewResume);
             Toast.makeText(this, "View Resume", Toast.LENGTH_SHORT).show();
-            // TODO: Open resume viewer
         });
 
         // Logout button
@@ -264,51 +371,16 @@ public class ProfileActivity extends AppCompatActivity {
         }, 600);
     }
 
-    private void animateStats() {
-        // Animate interview count
-        new Handler().postDelayed(() -> {
-            ValueAnimator interviewAnimator = ValueAnimator.ofInt(0, totalInterviews);
-            interviewAnimator.setDuration(1500);
-            interviewAnimator.setInterpolator(new DecelerateInterpolator());
-            interviewAnimator.addUpdateListener(animation -> {
-                int value = (int) animation.getAnimatedValue();
-                tvInterviewsCount.setText(String.valueOf(value));
-                pbInterviews.setProgress((int) (((float) value / 50) * 100));
-            });
-            interviewAnimator.start();
-        }, 500);
+    private void handleLogout() {
+        SharedPreferences prefs = getSharedPreferences("auth", MODE_PRIVATE);
+        prefs.edit().clear().apply();
 
-        // Animate skills count
-        new Handler().postDelayed(() -> {
-            ValueAnimator skillsAnimator = ValueAnimator.ofInt(0, skillsLearned);
-            skillsAnimator.setDuration(1500);
-            skillsAnimator.setInterpolator(new DecelerateInterpolator());
-            skillsAnimator.addUpdateListener(animation -> {
-                int value = (int) animation.getAnimatedValue();
-                tvSkillsCount.setText(String.valueOf(value));
-                pbSkills.setProgress((int) (((float) value / 20) * 100));
-            });
-            skillsAnimator.start();
-        }, 700);
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
 
-        // Animate score
-        new Handler().postDelayed(() -> {
-            ValueAnimator scoreAnimator = ValueAnimator.ofInt(0, averageScore);
-            scoreAnimator.setDuration(1500);
-            scoreAnimator.setInterpolator(new DecelerateInterpolator());
-            scoreAnimator.addUpdateListener(animation -> {
-                int value = (int) animation.getAnimatedValue();
-                tvScoreValue.setText(value + "%");
-                pbScore.setProgress(value);
-            });
-            scoreAnimator.start();
-        }, 900);
+        redirectToLogin();
     }
 
-    private void handleLogout() {
-        // TODO: Clear SharedPreferences/Firebase session
-        Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show();
-
+    private void redirectToLogin() {
         new Handler().postDelayed(() -> {
             Intent intent = new Intent(ProfileActivity.this, activity_login.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
