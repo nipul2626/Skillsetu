@@ -6,6 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.*;
 
+import java.util.Map;
+import java.util.Locale;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -32,7 +39,7 @@ public class TPODashboardActivity extends AppCompatActivity {
     private Long collegeId;
 
     // Header
-    private ImageView ivBack;
+    private ImageView ivBack,ivRefresh;
     private TextView tvCollegeName, tvTPOName;
 
     // Stats
@@ -107,6 +114,9 @@ public class TPODashboardActivity extends AppCompatActivity {
         recyclerViewStudents = findViewById(R.id.recyclerViewStudents);
         tvNoStudents = findViewById(R.id.tvNoStudents);
         tvStudentCount = findViewById(R.id.tvStudentCount);
+
+        ivRefresh = findViewById(R.id.ivRefresh);
+
 
         recyclerViewStudents.setLayoutManager(new LinearLayoutManager(this));
 
@@ -243,6 +253,51 @@ public class TPODashboardActivity extends AppCompatActivity {
             tabFilter.selectTab(tabFilter.getTabAt(0));
             loadStudentsFromBackend();
         });
+        ivRefresh.setOnClickListener(v -> {
+
+            ivRefresh.setEnabled(false);
+            ivRefresh.animate().rotationBy(360).setDuration(600).start();
+
+            apiService.refreshAnalytics(authToken, collegeId)
+                    .enqueue(new Callback<>() {
+
+                        @Override
+                        public void onResponse(Call<Map<String, String>> call,
+                                               Response<Map<String, String>> response) {
+
+                            // NOW reload fresh data
+                            loadDashboardStats();
+                            loadStudentsFromBackend();
+
+                            ivRefresh.setEnabled(true);
+                        }
+
+                        @Override
+                        public void onFailure(Call<Map<String, String>> call, Throwable t) {
+                            ivRefresh.setEnabled(true);
+                            Toast.makeText(
+                                    TPODashboardActivity.this,
+                                    "Refresh failed",
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    });
+        });
+
+
+
+    }
+
+    private void refreshAllData() {
+
+        // Optional loading indicator
+        Toast.makeText(this, "Refreshing data...", Toast.LENGTH_SHORT).show();
+
+        // Reload dashboard cards
+        loadDashboardStats();
+
+        // Reload student list
+        loadStudentsFromBackend();
     }
 
     private void displayStudents() {

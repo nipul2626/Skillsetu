@@ -38,6 +38,13 @@ public interface ApiService {
             @Body InterviewRequest request
     );
 
+    @POST("/api/analytics/refresh/{collegeId}")
+    Call<Map<String, String>> refreshAnalytics(
+            @Header("Authorization") String token,
+            @Path("collegeId") Long collegeId
+    );
+
+
     @POST("api/analytics/students/list/{collegeId}")
     Call<Map<String, Object>> getStudents(
             @Path("collegeId") long collegeId,
