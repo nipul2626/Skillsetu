@@ -73,6 +73,20 @@ public interface ApiService {
             @Path("studentId") Long studentId
     );
 
+    // ==================== ROADMAPS ====================
+
+    @GET("api/roadmaps/student/{studentId}")
+    Call<List<RoadmapSummary>> getStudentRoadmaps(
+            @Header("Authorization") String token,
+            @Path("studentId") Long studentId
+    );
+
+    @GET("api/roadmaps/{roadmapId}")
+    Call<Roadmap> getRoadmapById(
+            @Header("Authorization") String token,
+            @Path("roadmapId") Long roadmapId
+    );
+
     // TPO Dashboard stats
     @GET("api/analytics/dashboard/{collegeId}")
     Call<Map<String, Object>> getTPODashboardStats(

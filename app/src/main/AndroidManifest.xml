@@ -16,10 +16,14 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".SplashActivity"
+            android:name=".RoadmapListActivity"
             android:exported="false"
             android:theme="@style/AppTheme"
-            >
+            />
+        <activity
+            android:name=".SplashActivity"
+            android:exported="false"
+            android:theme="@style/AppTheme">
 
         </activity>
         <activity
@@ -71,10 +75,10 @@
             android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
