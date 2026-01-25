@@ -287,32 +287,32 @@ public class InterviewActivity extends AppCompatActivity {
         tvWordCount.setText(wordCount + " words");
 
         if (wordCount < MIN_WORDS) {
-            tvAnswerQuality.setText("?? ? Too short (min 10 words)");
+            tvAnswerQuality.setText("Too short (min 10 words)");
             tvAnswerQuality.setTextColor(
                     ContextCompat.getColor(this, R.color.error_red)
             );
             btnSubmitAnswer.setEnabled(false);
             btnSubmitAnswer.setAlpha(0.6f);
         } else if (wordCount < TARGET_QUICK_WORDS) {
-            tvAnswerQuality.setText("???? Add more details");
+            tvAnswerQuality.setText("Add more details");
             tvAnswerQuality.setTextColor(ContextCompat.getColor(this,R.color.warning_amber));
             btnSubmitAnswer.setEnabled(true);
             btnSubmitAnswer.setAlpha(1f);
         } else if (wordCount <= MAX_QUICK_WORDS) {
             boolean hasTechnicalTerms = containsTechnicalTerms(text);
             if (hasTechnicalTerms) {
-                tvAnswerQuality.setText("??? Good answer!");
+                tvAnswerQuality.setText("Good answer!");
                 tvAnswerQuality.setTextColor(
                         ContextCompat.getColor(this,R.color.success_green));
             } else {
-                tvAnswerQuality.setText("???? Add technical terms");
+                tvAnswerQuality.setText("Add technical terms");
                 tvAnswerQuality.setTextColor(
                         ContextCompat.getColor(this,R.color.warning_amber));
             }
             btnSubmitAnswer.setEnabled(true);
             btnSubmitAnswer.setAlpha(1f);
         } else {
-            tvAnswerQuality.setText("?? ? Too long (max 150 words)");
+            tvAnswerQuality.setText("Too long (max 150 words)");
             tvAnswerQuality.setTextColor(
                     ContextCompat.getColor(this,R.color.error_red));
             btnSubmitAnswer.setEnabled(false);
@@ -373,7 +373,7 @@ public class InterviewActivity extends AppCompatActivity {
         if (isMcq) {
 
             if (selectedMcqOption == -1) {
-                Toast.makeText(this, "?? ? Please select an option", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please select an option", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -424,7 +424,7 @@ public class InterviewActivity extends AppCompatActivity {
         btnSubmitAnswer.setAlpha(0.6f);
         etQuickAnswer.setEnabled(false);
 
-        showLoading(true, "???? AI is analyzing your answer...");
+        showLoading(true, "");
 
         aiManager.generateFollowUpQuestion(
                 currentQuestion.text,
@@ -440,7 +440,7 @@ public class InterviewActivity extends AppCompatActivity {
                             showFollowUpSection(followUp);
 
                             Log.d("Interview",
-                                    "??? Follow-up generated for Q" + currentQuestionNumber);
+                                    "" + currentQuestionNumber);
                         });
                     }
 
@@ -450,7 +450,7 @@ public class InterviewActivity extends AppCompatActivity {
                             showLoading(false, "");
 
                             Log.w("Interview",
-                                    "?? ? Follow-up generation failed: " + error);
+                                    "" + error);
 
                             // Graceful fallback
                             currentStage = AnswerStage.COMPLETE;

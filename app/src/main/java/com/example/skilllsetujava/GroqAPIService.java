@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * ðŸ† ULTRA-STRICT Groq API Service
+ * ULTRA-STRICT Groq API Service
  *
  * Features:
  * - MAXIMUM strictness in answer validation
@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
  */
 public class GroqAPIService {
     private static final String TAG = "GroqAPI";
-    private static final String GROQ_API_KEY = "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";
+    private static final String GROQ_API_KEY = "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";
     private static final String GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
     private static final String MODEL = "llama-3.1-8b-instant";
     private static final int MAX_RETRIES = 2;

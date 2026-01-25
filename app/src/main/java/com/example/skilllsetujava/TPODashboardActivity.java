@@ -142,7 +142,7 @@ public class TPODashboardActivity extends AppCompatActivity {
                         tvTotalStudents.setText(String.valueOf(((Number) d.get("totalStudents")).intValue()));
                         tvTotalInterviews.setText(String.valueOf(((Number) d.get("totalInterviews")).intValue()));
                         tvActiveRoadmaps.setText(String.valueOf(((Number) d.get("activeRoadmaps")).intValue()));
-                        tvAvgScore.setText(String.format(Locale.US, "%.1f/10",
+                        tvAvgScore.setText(String.format(Locale.US, "%.1f/50",
                                 ((Number) d.get("avgInterviewScore")).doubleValue()));
                     }
 
